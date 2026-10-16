@@ -78,7 +78,7 @@ python3 scripts/build_viewer.py --output _site
 python3 -m http.server 8000 --directory _site
 ```
 
-Then open `http://127.0.0.1:8000/`. The GitHub Pages workflow publishes the same build at `https://jing-wang-1999.github.io/scalebench/` after this repository is created under that account, Pages is configured for GitHub Actions, and `main` is pushed.
+Then open `http://127.0.0.1:8000/`. The GitHub Pages workflow publishes the same build at `https://jing-wang-1999.github.io/ScaleBench/` when the repository is public and Pages is configured to use GitHub Actions.
 
 ## Curation audit
 
