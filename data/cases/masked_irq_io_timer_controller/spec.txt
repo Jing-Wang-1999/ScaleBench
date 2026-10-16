@@ -1,49 +1,52 @@
-Generate a Verilog module that implements a versatile I/O interface with internal timer and serial data handling capabilities. This module:
+Create a deterministic memory-mapped I/O, timer, and masked-interrupt controller named `masked_irq_io_timer_controller` with the exact interface below.
 
-1. **Primary Function**: Operates as a configurable I/O controller, handling multiple general-purpose I/O ports, internal timers, serial data transfer, and interrupt requests.
-
-2. **Control Flow**: Key control decisions are based on clock signals (`clk7_en`, `clk7n_en`), read/write operations (`rd`, `wr`), and the address selection (`rs`). Reset and enable signals ensure proper initialization and conditional execution. The control flow involves:
-   - Initializing or updating internal registers based on input control signals.
-   - Managing serial data operations and generating appropriate control signals for serial transmission.
-   - Handling keystroke detection and conditional freezing based on specific data patterns.
-   - Controlling timer operations and managing timer overflows and resets.
-
-3. **Data Processing and Signal Interactions**: 
-   - Data input and output are managed through ports `data_in` and `data_out`.
-   - Internal registers handle states for Timer A, Timer B, and Timer D, which count down and reload based on specific triggers.
-   - Interrupts are generated based on specific conditions and are handled through the Interrupt Control Register (ICR) and Interrupt Mask Register (IMASK).
-   - Serial data management involves latching input data, detecting keystrokes, and controlling serial transmission flags.
-   - Addresses multiple external and internal data lines (`porta`, `portb`, `icr_out`, `tmra_out`, `tmrb_out`, `tmrd_out`, `sdr_out`) to interface with connected peripherals and maintain internal state.
-
-**Verilog Code Generation**:
-
-Module Interface:
+```verilog
 module masked_irq_io_timer_controller
 (
-	input        clk,           
-	input        clk7_en,
-	input        clk7n_en,
-	input        aen,           
-	input        rd,            
-	input        wr,            
-	input        reset,         
-	input  [3:0] rs,            
-	input  [7:0] data_in,       
-	output [7:0] data_out,      
-	input        tick,          
-	input        eclk,          
-	output       irq,           
-	input  [7:2] porta_in,      
-	output [3:0] porta_out,     
-	input  [7:0] portb_in,      
-
-	input        kms_level,
-	input  [1:0] kbd_mouse_type,
-	input  [7:0] kbd_mouse_data,
-	output       freeze,        
-	input        hrtmon_en
+    input        clk,
+    input        clk7_en,
+    input        clk7n_en,
+    input        aen,
+    input        rd,
+    input        wr,
+    input        reset,
+    input  [3:0] rs,
+    input  [7:0] data_in,
+    output [7:0] data_out,
+    input        tick,
+    input        eclk,
+    output       irq,
+    input  [7:2] porta_in,
+    output [3:0] porta_out,
+    input  [7:0] portb_in,
+    input        kms_level,
+    input  [1:0] kbd_mouse_type,
+    input  [7:0] kbd_mouse_data,
+    output       freeze,
+    input        hrtmon_en
 );
+```
 
-Behavioral Clarifications:
-- The interrupt system uses both an icr register (7-bit interrupt flags, auto-set from ta/tb/alrm/keystrobe/ser_tx_irq each cycle unless overridden by write) and an imask register (7-bit mask); irq = |(icr & imask). Timer A and B initialize to 16'hFFFF on reset; Timer D initializes to 24'hFFFFFF. Timers reload from latch registers when expired or when irq_en is deasserted.
-- `spmode` is tied to 0. The registers `ta_irq`, `tb_irq`, `d_irq`, `ta_irq_en`, `tb_irq_en`, and `d_irq_en` are never assigned in the reference, so they are unknown/unconstrained rather than zero. The timer latch registers are also not reset. Consequently, timer reload and interrupt behavior is not fully deterministic; this case is quarantined from model comparison.
+All state uses the rising edge of `clk` and has a synchronous active-high `reset`. A bus read occurs when `aen && rd && !wr`; a bus write occurs when `aen && wr`. Reads outside an implemented address return zero, and `data_out` is zero when no read is active. `eclk` is an unused compatibility input.
+
+Register map:
+
+| `rs` | Read | Write |
+|---|---|---|
+| `0` | `{registered porta_in[7:2], porta_out[1:0]}` | Store `{data_in[7:6],data_in[1:0]}` in the four-bit port-A data register |
+| `1` | `portb_in` | No effect |
+| `2` | Port-A direction register | Port-A direction register |
+| `3` | Port-B direction register | Port-B direction register |
+| `4`,`5` | Timer-A low, high byte | Update that byte of timer A and its reload latch |
+| `6`,`7` | Timer-B low, high byte | Update that byte of timer B and its reload latch |
+| `8`,`9`,`A` | Timer-D low, middle, high byte | Update that byte of timer D and its reload latch |
+| `C` | Serial-data register | Serial-data register |
+| `D` | `{irq, interrupt_pending[6:0]}` | Interrupt clear when bit 7 is one; mask replacement when bit 7 is zero |
+
+Sample `porta_in` whenever `clk7_en` is high. Reset both direction registers and the port-A data register to zero. Drive `porta_out[3:2] = (~direction[7:6]) | data[3:2]` and `porta_out[1:0] = (~direction[1:0]) | data[1:0]`.
+
+Timers A and B are 16-bit down-counters. Timer D is a 24-bit down-counter. Reset every timer and reload latch to all ones. A selected byte write updates the same byte in both the current timer and its reload latch. On each `clk7_en` cycle without a write, A and B decrement; when already zero, they reload. Timer D changes only on a sampled rising edge of `tick`: it decrements when nonzero and reloads when already zero.
+
+The seven pending interrupt bits are `{timer_D, timer_B, timer_A, 1'b0, keyboard_strobe, 2'b00}`. An event sets its pending bit, which remains set until cleared. A write to address `D` with `data_in[7] == 1` clears every pending bit whose corresponding `data_in[6:0]` bit is one; simultaneous events remain pending. A write with bit 7 zero replaces the seven-bit interrupt mask. Assert `irq` when any pending bit is also enabled by the mask. Reset pending bits and the mask to zero.
+
+On reset, clear the sampled keyboard level, strobe, serial-data register, and `freeze`. On each `clk7n_en` cycle, update the sampled `kms_level` and pulse the strobe for one cycle when the level changed and `kbd_mouse_type == 2'b10`. When that strobe is observed on a `clk7_en` cycle, load the serial-data register with `~{kbd_mouse_data[6:0],kbd_mouse_data[7]}` and set `freeze` exactly when `hrtmon_en && kbd_mouse_data == 8'h5f`; otherwise preserve both values until another keyboard/mouse event or a bus write to the serial-data register.

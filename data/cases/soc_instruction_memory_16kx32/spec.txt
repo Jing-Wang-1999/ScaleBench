@@ -1,21 +1,4 @@
-### Instruction for Verilog Module Generation:
-
-The primary function of this Verilog module is to serve as a memory block in a SoC (System on Chip) that can read from and write to a 32-bit wide memory with 16384 addresses, utilizing byte enable signals for selective byte-level write operations.
-
-1. **Initialization**: Upon synthesis, the memory is initialized from a specified hex file (`INIT_FILE`).
-
-2. **Control Flow**:
-   - The write enable (`wren`) is determined by combining the chip select (`chipselect`) and write (`write`) signals.
-   - The main sequential logic is gated by the clock (`clk`) and the clock enable (`clken`).
-
-3. **Data Processing & Signal Interaction**:
-   - If the clock enable (`clken`) is active at the positive edge of the clock (`clk`), the module checks the write enable (`wren`).
-     - If `wren` is active:
-       - The data (`writedata`) is written to the memory at the specified address (`address`) with byte granularity controlled by the `byteenable` signal.
-         - Each bit of the `byteenable` signal corresponds to one byte of the 32-bit data, allowing selective byte writes.
-       - Regardless of the `wren` state, the memory content at the given address is always read out and assigned to the `readdata` output.
-
-Ensure the module correctly handles these interactions and logic flows, reflecting the described behavior in the Verilog implementation.
+Implement a synchronous 16384 x 32-bit byte-writeable instruction memory.
 
 Module Interface:
 module soc_instruction_memory_16kx32 (
@@ -30,6 +13,19 @@ module soc_instruction_memory_16kx32 (
     readdata
 );
 
-Behavioral Clarifications:
-- The INIT_FILE parameter defaults to "../SoC_ins_mem0.hex". The address is 14 bits wide (16384 entries); readdata is a registered 32-bit output. The reset input is present in the port list but is not used in any logic.
-- One sequential always block (posedge clk) performs both byte-enable write and synchronous read when clken is asserted; no reset logic is applied to the memory or readdata.
+Ports:
+- `address` is a 14-bit word address.
+- `byteenable` selects the four byte lanes, with bit 0 controlling `writedata[7:0]` and bit 3 controlling `writedata[31:24]`.
+- `chipselect` and `write` jointly enable a write.
+- `clk` is the rising-edge clock and `clken` enables memory operations.
+- `reset` is an active-high synchronous reset.
+- `writedata` and registered `readdata` are 32 bits wide.
+
+Required behavior:
+- On a rising edge with `reset` asserted, every address becomes logically zero and `readdata` becomes zero. Reset has priority over `clken`.
+- When reset is deasserted and `clken` is low, all state holds.
+- When reset is deasserted and `clken` is high, `readdata` captures the word stored at `address` before any write on that edge.
+- A write occurs only when `chipselect && write` is true. Enabled byte lanes are replaced from `writedata`; disabled lanes retain their previous values.
+- A location that has not been written since reset reads as `32'b0`. A write with no byte enables marks the location as written but leaves its value unchanged.
+
+The implementation must be self-contained and must not read an external initialization file.

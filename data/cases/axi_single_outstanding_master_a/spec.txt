@@ -1,0 +1,76 @@
+Implement `axi_single_outstanding_master_a` as two independent, single-outstanding AXI master engines: one read engine and one write engine. Both engines use `clk` and an asynchronous active-low `rst_n`. Reset clears all pending transactions, output-valid state, counters, buffered write data, start-edge history, and completion pulses.
+
+Read behavior:
+
+- Detect a rising edge of `rd_start`. Accept that edge only while the read engine is idle and `rd_req_wr_en` is high. `rd_req_full_n` is high exactly while the read engine is idle.
+- On an accepted request, capture `rd_baseAddr` as the read address and `rd_req_din[7:0]` as AXI `ARLEN`. `ARLEN` uses the AXI beats-minus-one encoding.
+- Drive one read address request with the captured payload. Hold `m_axi_arvalid`, `m_axi_araddr`, and `m_axi_arlen` stable until `m_axi_arready` is high.
+- Use an incrementing 64-bit-data burst: `m_axi_arburst=2'b01`, `m_axi_arsize=3'b011`, and zero for `m_axi_arcache`, `m_axi_arid`, `m_axi_arlock`, `m_axi_arqos`, and `m_axi_arregion`.
+- After the address handshake, forward each AXI read beat to the output stream. Drive `m_axis_rd_tdata=m_axi_rdata`, `m_axis_rd_tvalid=m_axi_rvalid`, `m_axis_rd_tlast=m_axi_rlast`, and both byte qualifier outputs to `8'hff` while the read-data phase is active. Assert `m_axi_rready` only when that phase is active and `m_axis_rd_tready` is high.
+- Complete the request when a beat with `m_axi_rlast` is transferred. Pulse `rd_done` for one clock cycle. `m_axi_rid` and `m_axi_rresp` do not alter the transfer or completion behavior.
+
+Write behavior:
+
+- Detect a rising edge of `wr_start`. Accept that edge only while the write engine is idle. Capture `wr_baseAddr` as the write address and `wr_len` as AXI `AWLEN`; `wr_len` therefore uses the beats-minus-one encoding.
+- Hold `m_axi_awvalid`, `m_axi_awaddr`, and `m_axi_awlen` stable until `m_axi_awready` is high. Drive `m_axi_awid=0` and `m_axi_awsize=3'b011`.
+- After the address handshake, accept stream beats through a one-entry buffer. Assert `s_axis_wr_tready` only while the data phase is active and the buffer is empty. Hold buffered `m_axi_wdata`, `m_axi_wvalid`, and `m_axi_wlast` stable until `m_axi_wready` is high. Drive `m_axi_wstrb=8'hff`.
+- Number transferred write beats from zero. Assert `m_axi_wlast` on the beat whose number equals the captured `wr_len`.
+- After the final write beat transfers, assert `m_axi_bready` until `m_axi_bvalid` is high. Then pulse `wr_done` for one clock cycle. `m_axi_bresp` does not alter completion behavior.
+
+The read and write engines may operate concurrently. A start input held high produces only one request; it must return low before another rising edge can be recognized.
+
+Module Interface:
+module axi_single_outstanding_master_a (
+    input clk,
+    output [63:0] m_axi_araddr,
+    output [1:0] m_axi_arburst,
+    output [3:0] m_axi_arcache,
+    output [5:0] m_axi_arid,
+    output [7:0] m_axi_arlen,
+    output [1:0] m_axi_arlock,
+    output [3:0] m_axi_arqos,
+    input m_axi_arready,
+    output [3:0] m_axi_arregion,
+    output [2:0] m_axi_arsize,
+    output m_axi_arvalid,
+    output [63:0] m_axi_awaddr,
+    output [5:0] m_axi_awid,
+    output [7:0] m_axi_awlen,
+    input m_axi_awready,
+    output [2:0] m_axi_awsize,
+    output m_axi_awvalid,
+    output m_axi_bready,
+    input [1:0] m_axi_bresp,
+    input m_axi_bvalid,
+    input [63:0] m_axi_rdata,
+    input [5:0] m_axi_rid,
+    input m_axi_rlast,
+    output m_axi_rready,
+    input [1:0] m_axi_rresp,
+    input m_axi_rvalid,
+    output [63:0] m_axi_wdata,
+    output m_axi_wlast,
+    input m_axi_wready,
+    output [7:0] m_axi_wstrb,
+    output m_axi_wvalid,
+    output [63:0] m_axis_rd_tdata,
+    output [7:0] m_axis_rd_tkeep,
+    output m_axis_rd_tlast,
+    input m_axis_rd_tready,
+    output [7:0] m_axis_rd_tstrb,
+    output m_axis_rd_tvalid,
+    input [63:0] rd_baseAddr,
+    output rd_done,
+    input [31:0] rd_req_din,
+    output rd_req_full_n,
+    input rd_req_wr_en,
+    input rd_start,
+    input rst_n,
+    input [63:0] s_axis_wr_tdata,
+    output s_axis_wr_tready,
+    input s_axis_wr_tvalid,
+    input [63:0] wr_baseAddr,
+    output wr_done,
+    input [7:0] wr_len,
+    input wr_start
+);

@@ -1,20 +1,27 @@
-The Verilog module `multimedia_soc_gpio_router` interfaces various peripheral devices with a central control structure. It manages signal routing and interactions for DDR3 memory, Ethernet, SDIO, SPI, USB, UART, GPIO, HDMI, ADC, and other interfaces.
+Implement `multimedia_soc_gpio_router` as a combinational board-interface
+router with deterministic safe-idle values. This task does not model a DDR3,
+Ethernet, USB, video, or storage controller.
 
-1. **Summary of Primary Function:**
-   The `multimedia_soc_gpio_router` module provides connectivity and control for multiple peripheral interfaces including DDR3 memory, Ethernet, SDIO, SPI, USB, UART, HDMI, GPIO, and ADC. It defines the signal routing required for proper operation and control of these interfaces.
+The six `gpio_bd_i` inputs are routed to `gpio_bd_o[5:0]`, while
+`gpio_bd_o[7:6]` are zero. All other input signals are intentionally ignored.
 
-2. **Key Control Flow and Decision Points:**
-   - Several assignments determine output signals for peripheral control, such as `start_n`, `sdp_convst`, `sdp_mclk`, and `reset_n`.
-   - GPIO pins are utilized to control various other signals and are conditionally assigned.
-   - I2C signals for HDMI are conditionally set to either transmission line (Z) or driven low based on internal logic conditions.
+Use the following exact output policy:
 
-3. **Important Data Processing and Signal Interactions:**
-   - The GPIO input array (`gpio_i`) and output array (`gpio_o`) are partially hard-coded and partially mapped to other IO pins, reflecting their interaction for controlling the peripherals.
-   - HDI2C control signals (`hdmi_i2c_scl` and `hdmi_i2c_sda`) are dynamically managed through conditional logic for bidirectional data signaling.
-   - The reset sequence for the system and start-up control signals are managed through dedicated GPIO outputs.
-   - Ethernet and other high-speed interfaces have specific clock (phy_clk) and data routing mechanisms separately managed within the module.
+- Drive `ddr3_a`, `ddr3_ba`, `ddr3_ck_p`, `ddr3_ck_n`, `ddr3_cke`,
+  `ddr3_dm`, and `ddr3_odt` low. Drive `ddr3_reset_n`, `ddr3_cs_n`,
+  `ddr3_ras_n`, `ddr3_cas_n`, and `ddr3_we_n` high. Release `ddr3_dq`,
+  `ddr3_dqs_p`, and `ddr3_dqs_n` to high impedance.
+- Drive the Ethernet transmit signals and `eth1_mdc` low, and release
+  `eth1_mdio` to high impedance.
+- Drive `sdio_clk` low and release `sdio_cmd` and `sdio_d`.
+- Drive both SPI clocks and both MOSI outputs low. Drive `spim1_ss0` and
+  `spi_csn` high.
+- Drive `usb1_stp` low and release `usb1_d`.
+- Hold the UART transmit line high and release `hps_conv_usb_n`.
+- Drive all HDMI video outputs low and release both HDMI I2C lines.
+- Drive `start_n` and `reset_n` high. Drive `sdp_convst` and `sdp_mclk` low.
 
-With this understanding, the generated Verilog module facilitates the control and management of multiple peripheral interfaces by processing input signals, routing data appropriately, and generating required control signals for the proper functioning of an integrated system.
+The module contains no state and must not drive any port declared as an input.
 
 Module Interface:
 module multimedia_soc_gpio_router (
@@ -89,6 +96,3 @@ module multimedia_soc_gpio_router (
   output         sdp_mclk,
   output         reset_n
 );
-
-Reference Caveat:
-- The golden RTL is an incomplete integration shell rather than a fully functional SoC hub. `gpio_o`, I2C controls, and several peripheral outputs are undriven, and overlapping continuous assignments drive portions of `gpio_i`. This case is quarantined because the intended interface behavior is not deterministically represented by the reference.

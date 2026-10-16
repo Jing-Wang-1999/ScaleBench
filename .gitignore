@@ -1,13 +1,11 @@
 __pycache__/
 *.py[cod]
 _site/
+private/
 .DS_Store
 .idea/
 .vscode/
 
-# Local evaluation products
-/results/
 work/
-evaluation/raw_responses/
 *.log
 *.vcd

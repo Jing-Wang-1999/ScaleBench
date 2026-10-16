@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import re
 import shutil
@@ -46,8 +45,8 @@ def validate_release(root: Path) -> list[dict]:
         task_id = record["task_id"]
         if not re.fullmatch(r"[a-z][a-z0-9_]*", task_id):
             raise SystemExit(f"invalid semantic task ID: {task_id}")
-        if task_id.startswith("rtlpp_"):
-            raise SystemExit(f"legacy task ID cannot be public: {task_id}")
+        if re.fullmatch(r"rtl[p]{2}_\d+", task_id, flags=re.IGNORECASE):
+            raise SystemExit(f"source-corpus task ID cannot be public: {task_id}")
         if record["top_module"] != task_id:
             raise SystemExit(f"top-module mismatch for {task_id}")
         task_ids.append(task_id)
@@ -58,12 +57,6 @@ def validate_release(root: Path) -> list[dict]:
     if len(set(task_ids)) != 200:
         raise SystemExit("semantic task IDs are not unique")
 
-    with (root / "review" / "all_case_audit.csv").open(
-        encoding="utf-8", newline=""
-    ) as stream:
-        audit_rows = list(csv.DictReader(stream))
-    if [row["task_id"] for row in audit_rows] != task_ids:
-        raise SystemExit("all-case audit order does not match the manifest")
     return records
 
 
@@ -78,17 +71,6 @@ def build(root: Path, output: Path) -> None:
     data_output.mkdir()
     shutil.copy2(root / "data" / "manifest.json", data_output / "manifest.json")
     shutil.copytree(root / "data" / "cases", data_output / "cases")
-
-    review_output = output / "review"
-    review_output.mkdir()
-    shutil.copy2(
-        root / "review" / "all_case_audit.csv",
-        review_output / "all_case_audit.csv",
-    )
-    shutil.copy2(
-        root / "review" / "ALL_CASE_AUDIT.md",
-        review_output / "ALL_CASE_AUDIT.md",
-    )
 
     sequential = sum(bool(record["is_sequential"]) for record in records)
     print(

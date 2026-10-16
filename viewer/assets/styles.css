@@ -519,52 +519,6 @@ tbody tr:last-child td {
   font-size: 1.4rem;
 }
 
-.result-strip {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 30px;
-  border-block: 1px solid var(--line-dark);
-}
-
-.result-strip > div {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  padding: 18px 22px;
-  border-right: 1px solid var(--line-dark);
-}
-
-.result-strip > div:last-child {
-  border-right: 0;
-}
-
-.result-strip span,
-.result-strip strong {
-  display: block;
-}
-
-.result-strip span {
-  grid-column: 1;
-  color: var(--ink-soft);
-  font-size: 0.69rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.result-strip strong {
-  grid-column: 1;
-  margin-top: 3px;
-  font-size: 0.9rem;
-}
-
-.result-strip b {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  align-self: center;
-  color: var(--navy);
-  font-size: 1.25rem;
-}
-
 .review-callout {
   display: flex;
   align-items: center;
@@ -806,7 +760,7 @@ tbody tr:last-child td {
 
 .filter-bar {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) repeat(3, minmax(150px, auto));
+  grid-template-columns: minmax(260px, 1fr) minmax(170px, auto);
   gap: 10px;
   margin: 12px 0 16px;
   padding: 13px;
@@ -842,8 +796,7 @@ tbody tr:last-child td {
 
 .field input:focus,
 .field select:focus,
-.pager-button:focus,
-.review-toggle input:focus-visible {
+.pager-button:focus {
   outline: 3px solid rgb(23 105 170 / 18%);
   outline-offset: 1px;
 }
@@ -903,26 +856,16 @@ tbody tr:last-child td {
   line-height: 1.2;
 }
 
-.pill-ready,
-.pill-pass,
-.pill-reviewed {
+.pill-public {
   background: var(--success);
   color: var(--success-ink);
 }
 
-.pill-repaired,
-.pill-evaluation {
+.pill-verifier {
   background: #e3eefb;
   color: #205d92;
 }
 
-.pill-attention,
-.pill-pending {
-  background: var(--warning);
-  color: var(--warning-ink);
-}
-
-.pill-fail,
 .pill-hidden {
   background: var(--danger);
   color: var(--danger-ink);
@@ -1000,26 +943,9 @@ tbody tr:last-child td {
   margin-top: 14px;
 }
 
-.review-toggle {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 8px;
-  color: var(--ink-soft);
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.review-toggle input {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--teal);
-}
-
 .case-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
@@ -1064,37 +990,6 @@ tbody tr:last-child td {
   color: var(--warning-ink);
   font-size: 0.82rem;
   line-height: 1.55;
-}
-
-.audit-list {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-
-.audit-list div {
-  display: grid;
-  grid-template-columns: 135px 1fr;
-  gap: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
-}
-
-.audit-list div:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.audit-list dt {
-  color: var(--ink-soft);
-  font-size: 0.75rem;
-  font-weight: 750;
-}
-
-.audit-list dd {
-  margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.5;
 }
 
 .file-section {
@@ -1214,28 +1109,6 @@ tbody tr:last-child td {
   padding-left: 20px;
 }
 
-.toast {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 100;
-  max-width: 340px;
-  padding: 10px 13px;
-  border-radius: 5px;
-  background: var(--navy-dark);
-  color: white;
-  font-size: 0.8rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px);
-  transition: 180ms ease;
-}
-
-.toast.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .empty-table {
   padding: 42px 20px;
   color: var(--ink-soft);
@@ -1322,32 +1195,23 @@ tbody tr:last-child td {
   }
 
   .metrics,
-  .dashboard-grid,
-  .result-strip {
+  .dashboard-grid {
     grid-template-columns: 1fr 1fr;
   }
 
   .metrics > div,
-  .metrics > div:not(:first-child),
-  .result-strip > div {
+  .metrics > div:not(:first-child) {
     padding: 17px;
     border-right: 1px solid var(--line-dark);
     border-bottom: 1px solid var(--line-dark);
   }
 
-  .metrics > div:nth-child(even),
-  .result-strip > div:nth-child(even) {
+  .metrics > div:nth-child(even) {
     border-right: 0;
   }
 
-  .metrics > div:nth-last-child(-n + 2),
-  .result-strip > div:last-child {
+  .metrics > div:nth-last-child(-n + 2) {
     border-bottom: 0;
-  }
-
-  .result-strip > div:last-child {
-    grid-column: 1 / -1;
-    border-right: 0;
   }
 
   .section {
@@ -1389,11 +1253,6 @@ tbody tr:last-child td {
 
   .filter-bar .field:first-child {
     grid-column: auto;
-  }
-
-  .audit-list div {
-    grid-template-columns: 1fr;
-    gap: 3px;
   }
 
   .pager {

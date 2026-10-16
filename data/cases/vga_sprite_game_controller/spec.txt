@@ -1,0 +1,41 @@
+Implement a reduced VGA game controller containing raster timing, a visible
+border, and one movable character. Bullet, enemy, collision, and shooting logic
+are outside this reduced controller; `shoot` is ignored and `test` is always zero.
+
+Raster timing:
+
+- Maintain a 10-bit horizontal counter from 0 through 799 and a 9-bit vertical
+  counter from 0 through 524. Increment the vertical counter when the horizontal
+  counter wraps. Both counters synchronously clear when `reset` is high.
+- The visible area is `pixel_x < 640 && pixel_y < 480`.
+- `vga_h_sync` is active high for horizontal counts 656 through 751.
+- `vga_v_sync` is active high for vertical counts 490 and 491.
+
+Character and rendering behavior:
+
+- Reset the character's upper-left coordinate to `(320, 240)`.
+- Generate a movement enable once every 200,000 rising edges of `clk`.
+- The direction inputs are active low. At each movement enable, use priority
+  `up`, `down`, `left`, then `right`, and move by one pixel.
+- Clamp the upper-left coordinate to X=0..632 and Y=0..472 so the complete 8x8
+  character remains visible.
+- Render an eight-pixel-wide white border around the 640x480 visible area and
+  render the 8x8 character in white. Drive all RGB outputs low outside the
+  visible area.
+
+Module Interface:
+module vga_sprite_game_controller (
+    input  clk,
+    output vga_h_sync,
+    output vga_v_sync,
+    output vga_R,
+    output vga_G,
+    output vga_B,
+    input  up,
+    input  down,
+    input  left,
+    input  right,
+    input  shoot,
+    output test,
+    input  reset
+);

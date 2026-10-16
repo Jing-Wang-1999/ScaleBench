@@ -1,20 +1,3 @@
-module IOBUF (O, IO, I, T);
-    parameter CAPACITANCE = "DONT_CARE";
-    parameter integer DRIVE = 12;
-    parameter IBUF_DELAY_VALUE = "0";
-    parameter IBUF_LOW_PWR = "TRUE";
-    parameter IFD_DELAY_VALUE = "AUTO";
-    parameter IOSTANDARD = "DEFAULT";
-    parameter SLEW = "SLOW";
-
-    output O;
-    inout  IO;
-    input  I, T;
-
-    assign O = (T) ? 1'bz : IO;
-    assign IO = (T) ? 1'bz : I;
-endmodule
-
 module multimedia_soc_gpio_router (
   input          sys_clk,
 
@@ -88,41 +71,62 @@ module multimedia_soc_gpio_router (
   output         reset_n
 );
 
-  wire        sys_resetn;
-  wire [63:0] gpio_i;
-  wire [63:0] gpio_o;
-  wire [63:0] gpio_t;
+  // This benchmark case models the board-facing safe-idle router, not the
+  // omitted SoC subsystem. Inputs that have no defined route are ignored.
+  assign ddr3_a       = 15'b0;
+  assign ddr3_ba      = 3'b0;
+  assign ddr3_reset_n = 1'b1;
+  assign ddr3_ck_p    = 1'b0;
+  assign ddr3_ck_n    = 1'b0;
+  assign ddr3_cke     = 1'b0;
+  assign ddr3_cs_n    = 1'b1;
+  assign ddr3_ras_n   = 1'b1;
+  assign ddr3_cas_n   = 1'b1;
+  assign ddr3_we_n    = 1'b1;
+  assign ddr3_dq      = 32'bz;
+  assign ddr3_dqs_p   = 4'bz;
+  assign ddr3_dqs_n   = 4'bz;
+  assign ddr3_dm      = 4'b0;
+  assign ddr3_odt     = 1'b0;
 
-  wire        i2c1_scl;
-  wire        i2c1_scl_oe;
-  wire        i2c1_sda;
-  wire        i2c1_sda_oe;
+  assign eth1_tx_clk = 1'b0;
+  assign eth1_tx_ctl = 1'b0;
+  assign eth1_tx_d   = 4'b0;
+  assign eth1_mdc    = 1'b0;
+  assign eth1_mdio   = 1'bz;
 
-  wire        i2c0_out_data;
-  wire        i2c0_sda;
-  wire        i2c0_out_clk;
-  wire        i2c0_scl_in_clk;
+  assign sdio_clk = 1'b0;
+  assign sdio_cmd = 1'bz;
+  assign sdio_d   = 4'bz;
 
-  assign start_n    = gpio_o[33];
-  assign sdp_convst = gpio_o[34];
-  assign sdp_mclk   = gpio_o[35];
-  assign reset_n    = gpio_o[39];
+  assign spim1_ss0  = 1'b1;
+  assign spim1_clk  = 1'b0;
+  assign spim1_mosi = 1'b0;
 
-  // Keep the flags connected
-  assign gpio_i[63:39] = gpio_o[63:39];
-  assign gpio_i[35:33] = gpio_o[35:33];
-  assign gpio_i[31:15] = gpio_o[31:15];
-  assign gpio_i[13:8]  = gpio_bd_i[5:0];
-  assign gpio_bd_o[7:0] = gpio_o[7:0];
+  assign usb1_stp = 1'b0;
+  assign usb1_d   = 8'bz;
 
-  // IOBUF instantiation (equivalent functionality to the system_bd module)
-  assign hdmi_i2c_scl = (i2c0_out_clk) ? 1'bZ : 1'b0;
-  assign i2c0_scl_in_clk = hdmi_i2c_scl;
+  assign uart0_tx       = 1'b1;
+  assign hps_conv_usb_n = 1'bz;
 
-  assign hdmi_i2c_sda = (i2c0_out_data) ? 1'bZ : 1'b0;
-  assign i2c0_sda = hdmi_i2c_sda;
+  // The six board GPIO inputs are exposed on the low six output bits.
+  assign gpio_bd_o = {2'b00, gpio_bd_i};
 
-  // GPIOs
-  assign gpio_i[31:0] = { 32{1'b0} };
+  assign hdmi_out_clk = 1'b0;
+  assign hdmi_vsync   = 1'b0;
+  assign hdmi_hsync   = 1'b0;
+  assign hdmi_data_e  = 1'b0;
+  assign hdmi_data    = 24'b0;
+  assign hdmi_i2c_scl = 1'bz;
+  assign hdmi_i2c_sda = 1'bz;
+
+  assign spi_csn  = 1'b1;
+  assign spi_clk  = 1'b0;
+  assign spi_mosi = 1'b0;
+
+  assign start_n    = 1'b1;
+  assign sdp_convst = 1'b0;
+  assign sdp_mclk   = 1'b0;
+  assign reset_n    = 1'b1;
 
 endmodule

@@ -52,7 +52,10 @@ module memory_data_controller(
     end
 
     wire [15:0] unsigned_data = (data[15] == 1'b1) ? ((~data) + 1'b1) : data;
-    wire [19:0] temp = (sel != 2'b11) ? (unsigned_data * 10) : {4'b0000, (25 - (data - 25))};
+    wire [15:0] sel11_scaled = 16'd50 - data;
+    wire [19:0] temp = (sel != 2'b11)
+        ? (unsigned_data * 20'd10)
+        : {4'b0000, sel11_scaled};
     wire [15:0] unsigned_scaled_data = (sel != 2'b11) ? {10'b0000000000, temp[19:10]} : temp;
 
     always @(posedge clk or posedge rst) begin

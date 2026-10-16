@@ -21,6 +21,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Validate public release
+        run: python3 scripts/validate.py
+
       - name: Build benchmark profile and case browser
         run: python3 scripts/build_viewer.py --output _site
 

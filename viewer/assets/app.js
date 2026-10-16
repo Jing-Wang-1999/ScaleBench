@@ -2,18 +2,12 @@
 
 const TASK_KEY = "spec2rtl";
 const PAGE_SIZE = 50;
-const REVIEW_STORAGE_KEY = "scalebench-reviewed-cases-v1";
 const MANIFEST_URL = "./data/manifest.json";
-const AUDIT_URL = "./review/all_case_audit.csv";
 
 const content = document.querySelector("#content");
-const toast = document.querySelector("#toast");
-
 const state = {
   cases: [],
   caseById: new Map(),
-  auditById: new Map(),
-  reviewed: loadReviewedCases(),
   searchTimer: null,
 };
 
@@ -26,78 +20,8 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function humanize(value) {
-  return String(value ?? "")
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
 function caseNumber(record) {
   return String(record.index + 1).padStart(3, "0");
-}
-
-function loadReviewedCases() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(REVIEW_STORAGE_KEY) || "[]");
-    return new Set(Array.isArray(saved) ? saved : []);
-  } catch {
-    return new Set();
-  }
-}
-
-function saveReviewedCases() {
-  localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify([...state.reviewed].sort()));
-}
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("visible");
-  window.clearTimeout(showToast.timer);
-  showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), 1800);
-}
-
-function parseCsv(text) {
-  const rows = [];
-  let row = [];
-  let field = "";
-  let quoted = false;
-
-  for (let index = 0; index < text.length; index += 1) {
-    const character = text[index];
-    const next = text[index + 1];
-
-    if (character === '"' && quoted && next === '"') {
-      field += '"';
-      index += 1;
-    } else if (character === '"') {
-      quoted = !quoted;
-    } else if (character === "," && !quoted) {
-      row.push(field);
-      field = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && next === "\n") {
-        index += 1;
-      }
-      row.push(field);
-      if (row.some((value) => value !== "")) {
-        rows.push(row);
-      }
-      row = [];
-      field = "";
-    } else {
-      field += character;
-    }
-  }
-
-  if (field || row.length) {
-    row.push(field);
-    rows.push(row);
-  }
-
-  const [header = [], ...records] = rows;
-  return records.map((values) =>
-    Object.fromEntries(header.map((name, index) => [name, values[index] ?? ""])),
-  );
 }
 
 function currentRoute() {
@@ -114,67 +38,31 @@ function hashFor(values) {
   return `#${params.toString()}`;
 }
 
-function curationGroup(record) {
-  if (record.curation_status.startsWith("repaired_")) {
-    return "repaired";
-  }
-  if (record.curation_status === "review_ready") {
-    return "ready";
-  }
-  return "attention";
-}
-
-function curationLabel(record) {
-  const labels = {
-    review_ready: "Review ready",
-    repaired_review_ready: "Repaired · review ready",
-    repaired_evaluation_ready: "Repaired · evaluation ready",
-    quarantined_golden_pathology: "Quarantined reference",
-    blocked_missing_memory_image: "Blocked · missing memory image",
-  };
-  return labels[record.curation_status] || humanize(record.curation_status);
-}
-
-function curationPill(record) {
-  const group = curationGroup(record);
-  const className = group === "attention" ? "pill-attention" : `pill-${group}`;
-  return `<span class="pill ${className}">${escapeHtml(curationLabel(record))}</span>`;
-}
-
-function resultPill(value) {
-  const normalized = String(value || "—").trim();
-  if (!normalized || normalized === "—") {
-    return '<span class="pill pill-pending">Not run</span>';
-  }
-  const passed = normalized.toUpperCase() === "PASS";
-  return `<span class="pill ${passed ? "pill-pass" : "pill-fail"}">${escapeHtml(normalized)}</span>`;
-}
-
 function breadcrumbs(parts) {
   const entries = ['<a href="./review.html">Case browser</a>'];
   parts.forEach((part) => {
-    entries.push(`<span aria-hidden="true">/</span>${part}`);
+    entries.push(`<span aria-hidden="true">/</span><span>${part}</span>`);
   });
   return `<nav class="browser-crumbs" aria-label="Breadcrumb">${entries.join("")}</nav>`;
 }
 
 function renderDashboard() {
   const sequential = state.cases.filter((record) => record.is_sequential).length;
-  const attention = state.cases.filter((record) => curationGroup(record) === "attention").length;
+  const locations = state.cases.map((record) => record.loc);
   content.innerHTML = `
     ${breadcrumbs([])}
     <div class="browser-title-row">
       <div>
         <h1>ScaleBench case browser</h1>
-        <p>Choose the benchmark task, then inspect its cases, audit decisions, and verification assets.</p>
+        <p>Open the benchmark task to inspect every specification, reference implementation, and verification script.</p>
       </div>
-      <a class="button button-secondary button-small" href="#guide">Review guide</a>
+      <a class="button button-secondary button-small" href="#guide">Evaluation guide</a>
     </div>
     <section class="dashboard-grid" aria-label="Case browser summary">
       <article class="dashboard-stat"><strong>${state.cases.length}</strong><span>Total cases</span></article>
       <article class="dashboard-stat"><strong>${sequential}</strong><span>Sequential</span></article>
       <article class="dashboard-stat"><strong>${state.cases.length - sequential}</strong><span>Combinational</span></article>
-      <article class="dashboard-stat"><strong>${attention}</strong><span>Need attention</span></article>
+      <article class="dashboard-stat"><strong>${Math.min(...locations)}–${Math.max(...locations)}</strong><span>Reference LoC</span></article>
     </section>
     <section aria-labelledby="task-list-title">
       <div class="browser-title-row">
@@ -198,20 +86,11 @@ function renderDashboard() {
 function filteredCases(route) {
   const query = (route.get("q") || "").trim().toLowerCase();
   const type = route.get("type") || "all";
-  const curation = route.get("curation") || "all";
-  const review = route.get("review") || "all";
 
   return state.cases.filter((record) => {
     const matchesQuery = !query || record.task_id.toLowerCase().includes(query);
     const recordType = record.is_sequential ? "sequential" : "combinational";
-    const matchesType = type === "all" || type === recordType;
-    const matchesCuration = curation === "all" || curation === curationGroup(record);
-    const isReviewed = state.reviewed.has(record.task_id);
-    const matchesReview =
-      review === "all" ||
-      (review === "reviewed" && isReviewed) ||
-      (review === "unreviewed" && !isReviewed);
-    return matchesQuery && matchesType && matchesCuration && matchesReview;
+    return matchesQuery && (type === "all" || type === recordType);
   });
 }
 
@@ -228,18 +107,16 @@ function renderCaseList(route) {
   const matches = filteredCases(route);
   const requestedPage = Number.parseInt(route.get("page") || "1", 10);
   const totalPages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
-  const page = Math.min(Math.max(Number.isFinite(requestedPage) ? requestedPage : 1, 1), totalPages);
+  const safeRequestedPage = Number.isFinite(requestedPage) ? requestedPage : 1;
+  const page = Math.min(Math.max(safeRequestedPage, 1), totalPages);
   const start = (page - 1) * PAGE_SIZE;
   const visibleCases = matches.slice(start, start + PAGE_SIZE);
   const type = route.get("type") || "all";
-  const curation = route.get("curation") || "all";
-  const review = route.get("review") || "all";
   const query = route.get("q") || "";
 
   const rows = visibleCases
-    .map((record) => {
-      const reviewed = state.reviewed.has(record.task_id);
-      return `
+    .map(
+      (record) => `
         <tr>
           <td>${caseNumber(record)}</td>
           <td>
@@ -247,11 +124,9 @@ function renderCaseList(route) {
           </td>
           <td>${record.is_sequential ? "Sequential" : "Combinational"}</td>
           <td>${record.loc}</td>
-          <td>${curationPill(record)}</td>
-          <td>${reviewed ? '<span class="pill pill-reviewed">Reviewed</span>' : '<span class="pill">Not reviewed</span>'}</td>
         </tr>
-      `;
-    })
+      `,
+    )
     .join("");
 
   content.innerHTML = `
@@ -259,39 +134,25 @@ function renderCaseList(route) {
     <div class="browser-title-row">
       <div>
         <h1>Specification-to-RTL generation</h1>
-        <p>All cases use semantic design names. Select a row to inspect its complete human-review package.</p>
+        <p>All 200 cases use semantic design names. Select a row to inspect its complete case package.</p>
       </div>
       <span class="pill">${matches.length} of ${state.cases.length} cases</span>
     </div>
-    <form class="filter-bar" id="case-filters">
+    <form class="filter-bar filter-bar-compact" id="case-filters">
       <label class="field">
         <span>Search semantic design names</span>
         <input name="q" type="search" value="${escapeHtml(query)}" placeholder="e.g. timer, packet, counter" autocomplete="off" />
       </label>
       <label class="field">
         <span>Design type</span>
-        <select name="type">${selectOptions([
-          ["all", "All types"],
-          ["sequential", "Sequential"],
-          ["combinational", "Combinational"],
-        ], type)}</select>
-      </label>
-      <label class="field">
-        <span>Curation</span>
-        <select name="curation">${selectOptions([
-          ["all", "All statuses"],
-          ["ready", "Review ready"],
-          ["repaired", "Prompt repaired"],
-          ["attention", "Needs attention"],
-        ], curation)}</select>
-      </label>
-      <label class="field">
-        <span>Manual review</span>
-        <select name="review">${selectOptions([
-          ["all", "Any progress"],
-          ["unreviewed", "Not reviewed"],
-          ["reviewed", "Reviewed"],
-        ], review)}</select>
+        <select name="type">${selectOptions(
+          [
+            ["all", "All types"],
+            ["sequential", "Sequential"],
+            ["combinational", "Combinational"],
+          ],
+          type,
+        )}</select>
       </label>
     </form>
     <div class="case-table-wrap">
@@ -301,12 +162,10 @@ function renderCaseList(route) {
             <th scope="col">Case</th>
             <th scope="col">Semantic design name</th>
             <th scope="col">Type</th>
-            <th scope="col">Ref. LoC</th>
-            <th scope="col">Curation status</th>
-            <th scope="col">Manual review</th>
+            <th scope="col">Reference LoC</th>
           </tr>
         </thead>
-        <tbody>${rows || '<tr><td class="empty-table" colspan="6">No cases match these filters.</td></tr>'}</tbody>
+        <tbody>${rows || '<tr><td class="empty-table" colspan="4">No cases match these filters.</td></tr>'}</tbody>
       </table>
     </div>
     <div class="pager">
@@ -339,47 +198,24 @@ function updateListRoute(route, changes) {
 
 function bindListControls(route) {
   const form = document.querySelector("#case-filters");
-  form.querySelectorAll("select").forEach((select) => {
-    select.addEventListener("change", () => updateListRoute(route, { [select.name]: select.value }));
-  });
+  const type = form.querySelector('select[name="type"]');
+  type.addEventListener("change", () => updateListRoute(route, { type: type.value }));
+
   const search = form.querySelector('input[name="q"]');
   search.addEventListener("input", () => {
     window.clearTimeout(state.searchTimer);
-    state.searchTimer = window.setTimeout(() => updateListRoute(route, { q: search.value.trim() }), 220);
+    state.searchTimer = window.setTimeout(
+      () => updateListRoute(route, { q: search.value.trim() }),
+      220,
+    );
   });
+
   document.querySelectorAll("[data-page]").forEach((button) => {
     button.addEventListener("click", () => updateListRoute(route, { page: button.dataset.page }));
   });
 }
 
-function auditRows(record, audit) {
-  if (!audit) {
-    return "<p>Audit data is unavailable for this case.</p>";
-  }
-
-  const fresh = [
-    ["GPT-4o", audit.gpt4o_fresh],
-    ["Claude Sonnet 4.5", audit.claude_sonnet_4_5_fresh],
-    ["Qwen 3.5 397B", audit.qwen3_5_397b_fresh],
-    ["DeepSeek V3.2", audit.deepseek_v3_2_fresh],
-  ]
-    .filter(([, value]) => value && value !== "—")
-    .map(([model, value]) => `${escapeHtml(model)} ${resultPill(value)}`)
-    .join(" ");
-
-  return `
-    <dl class="audit-list">
-      <div><dt>Historical GPT-4o</dt><dd>${resultPill(audit.gpt4o_historical)}</dd></div>
-      <div><dt>Historical Claude</dt><dd>${resultPill(audit.claude_sonnet_4_5_historical)}</dd></div>
-      <div><dt>Failed by both</dt><dd>${audit.consistently_failed === "yes" ? '<span class="pill pill-fail">Yes</span>' : '<span class="pill pill-pass">No</span>'}</dd></div>
-      <div><dt>Audit finding</dt><dd>${escapeHtml(audit.failure_reason_or_audit_finding)}</dd></div>
-      <div><dt>Fix status</dt><dd>${escapeHtml(audit.fix_status)}</dd></div>
-      <div><dt>Fresh evaluation</dt><dd>${fresh || '<span class="pill pill-pending">Not in fresh cohort</span>'}</dd></div>
-    </dl>
-  `;
-}
-
-function fileCard(record, key, title, filename, boundary, description) {
+function fileCard(record, key, filename, boundary, description) {
   return `
     <a class="file-card" href="${hashFor({ task: TASK_KEY, case: record.task_id, file: key })}">
       <span class="pill ${boundary.className}">${escapeHtml(boundary.label)}</span>
@@ -390,11 +226,8 @@ function fileCard(record, key, title, filename, boundary, description) {
 }
 
 function renderCase(record) {
-  const audit = state.auditById.get(record.task_id);
   const previous = state.cases[record.index - 1];
   const next = state.cases[record.index + 1];
-  const reviewed = state.reviewed.has(record.task_id);
-  const fixes = record.description_fixes || [];
 
   content.innerHTML = `
     ${breadcrumbs([
@@ -409,18 +242,12 @@ function renderCase(record) {
           <div class="pill-row">
             <span class="pill">${record.is_sequential ? "Sequential" : "Combinational"}</span>
             <span class="pill">${record.loc} reference LoC</span>
-            ${curationPill(record)}
-            ${fixes.length ? '<span class="pill pill-repaired">Description repaired</span>' : ""}
           </div>
         </div>
-        <label class="review-toggle">
-          <input id="reviewed-toggle" type="checkbox" ${reviewed ? "checked" : ""} />
-          Reviewed locally
-        </label>
       </div>
     </section>
 
-    <div class="case-grid">
+    <div class="case-grid case-grid-single">
       <section class="browser-card" aria-labelledby="entry-title">
         <h2 id="entry-title">Agent entry point</h2>
         <table class="entry-table">
@@ -432,12 +259,7 @@ function renderCase(record) {
             <tr><th scope="row">Pass condition</th><td>Formal equivalence to the hidden reference design</td></tr>
           </tbody>
         </table>
-        <p class="boundary-note"><strong>Evaluation boundary:</strong> give the evaluated model only <code>spec.txt</code>. The reference RTL, SEC script, audit findings, and historical results are human-review material.</p>
-      </section>
-
-      <section class="browser-card" aria-labelledby="audit-title">
-        <h2 id="audit-title">Case audit</h2>
-        ${auditRows(record, audit)}
+        <p class="boundary-note"><strong>Evaluation boundary:</strong> give the evaluated model only <code>spec.txt</code>. Keep <code>reference.v</code> and <code>sec.tcl</code> hidden until scoring.</p>
       </section>
 
       <section class="browser-card file-section" aria-labelledby="files-title">
@@ -446,15 +268,13 @@ function renderCase(record) {
           ${fileCard(
             record,
             "spec",
-            "Public model input",
             "spec.txt",
-            { label: "Model input", className: "pill-ready" },
+            { label: "Model input", className: "pill-public" },
             "Natural-language design description and exact module interface.",
           )}
           ${fileCard(
             record,
             "reference",
-            "Model-hidden reference",
             "reference.v",
             { label: "Model-hidden", className: "pill-hidden" },
             "Golden RTL used by the formal verification flow.",
@@ -462,10 +282,9 @@ function renderCase(record) {
           ${fileCard(
             record,
             "sec",
-            "Human-only verification",
             "sec.tcl",
-            { label: "Human-only", className: "pill-attention" },
-            "JasperGold SEC setup retained with the case.",
+            { label: "Verifier", className: "pill-verifier" },
+            "JasperGold sequential-equivalence setup for the case.",
           )}
         </div>
       </section>
@@ -476,17 +295,6 @@ function renderCase(record) {
       </nav>
     </div>
   `;
-
-  document.querySelector("#reviewed-toggle").addEventListener("change", (event) => {
-    if (event.target.checked) {
-      state.reviewed.add(record.task_id);
-      showToast(`Case ${caseNumber(record)} marked reviewed.`);
-    } else {
-      state.reviewed.delete(record.task_id);
-      showToast(`Case ${caseNumber(record)} marked not reviewed.`);
-    }
-    saveReviewedCases();
-  });
 }
 
 function fileDefinition(record, fileKey) {
@@ -496,7 +304,7 @@ function fileDefinition(record, fileKey) {
       filename: "spec.txt",
       path: record.spec_path,
       boundary: "Model input",
-      boundaryClass: "pill-ready",
+      boundaryClass: "pill-public",
     },
     reference: {
       label: "Reference RTL",
@@ -509,8 +317,8 @@ function fileDefinition(record, fileKey) {
       label: "SEC script",
       filename: "sec.tcl",
       path: record.sec_tcl_path,
-      boundary: "Human-only",
-      boundaryClass: "pill-attention",
+      boundary: "Verifier",
+      boundaryClass: "pill-verifier",
     },
   };
   return definitions[fileKey];
@@ -568,23 +376,21 @@ async function renderFile(record, fileKey) {
 
 function renderGuide() {
   content.innerHTML = `
-    ${breadcrumbs(["Review guide"])}
+    ${breadcrumbs(["Evaluation guide"])}
     <div class="browser-title-row">
       <div>
-        <h1>Review guide</h1>
-        <p>Use this browser to audit benchmark content. Keep the evaluation boundary intact when running a model.</p>
+        <h1>Evaluation guide</h1>
+        <p>Use the case browser to understand the task package while keeping model input separate from verifier assets.</p>
       </div>
       <a class="button button-primary button-small" href="#task=${TASK_KEY}">Browse cases →</a>
     </div>
     <div class="guide-grid">
       <section class="browser-card">
-        <h2>Recommended review order</h2>
+        <h2>Case package</h2>
         <ol>
-          <li>Read <code>spec.txt</code> and confirm that its behavior and interface are complete.</li>
-          <li>Inspect <code>reference.v</code> for consistency with the specification.</li>
-          <li>Check <code>sec.tcl</code> and the case curation status.</li>
-          <li>Read the historical failure finding and any prompt-repair status.</li>
-          <li>Mark the case reviewed locally before moving to the next case.</li>
+          <li><code>spec.txt</code> defines the required behavior, top module, and interface.</li>
+          <li><code>reference.v</code> is the golden implementation used only for scoring.</li>
+          <li><code>sec.tcl</code> configures JasperGold sequential equivalence checking.</li>
         </ol>
       </section>
       <section class="browser-card">
@@ -592,20 +398,9 @@ function renderGuide() {
         <ul>
           <li><strong>Give the model:</strong> only <code>spec.txt</code>.</li>
           <li><strong>Collect:</strong> one complete Verilog implementation with the named top module.</li>
-          <li><strong>Keep hidden:</strong> <code>reference.v</code>, <code>sec.tcl</code>, audit findings, and baseline outcomes.</li>
+          <li><strong>Keep hidden:</strong> <code>reference.v</code> and <code>sec.tcl</code>.</li>
           <li><strong>Score:</strong> pass only when JasperGold SEC proves equivalence.</li>
         </ul>
-      </section>
-      <section class="browser-card">
-        <h2>Curation labels</h2>
-        <p><span class="pill pill-ready">Review ready</span> has no confirmed dataset defect.</p>
-        <p><span class="pill pill-repaired">Repaired</span> has a documented description repair.</p>
-        <p><span class="pill pill-attention">Needs attention</span> is quarantined or blocked and should not enter aggregate evaluation unchanged.</p>
-      </section>
-      <section class="browser-card">
-        <h2>Manual review state</h2>
-        <p>The “Reviewed locally” checkbox is stored only in this browser. It does not alter repository data and is never uploaded.</p>
-        <p>Use the filters in the all-case table to show reviewed, unreviewed, repaired, or attention-required cases.</p>
       </section>
     </div>
   `;
@@ -644,11 +439,8 @@ function renderRoute() {
 
 async function initialize() {
   try {
-    const [manifestResponse, auditResponse] = await Promise.all([
-      fetch(MANIFEST_URL),
-      fetch(AUDIT_URL),
-    ]);
-    if (!manifestResponse.ok || !auditResponse.ok) {
+    const manifestResponse = await fetch(MANIFEST_URL);
+    if (!manifestResponse.ok) {
       throw new Error("The benchmark index could not be loaded.");
     }
 
@@ -657,8 +449,6 @@ async function initialize() {
       throw new Error(`Expected 200 cases, found ${state.cases.length}.`);
     }
     state.caseById = new Map(state.cases.map((record) => [record.task_id, record]));
-    const auditRowsData = parseCsv(await auditResponse.text());
-    state.auditById = new Map(auditRowsData.map((row) => [row.task_id, row]));
 
     window.addEventListener("hashchange", renderRoute);
     renderRoute();

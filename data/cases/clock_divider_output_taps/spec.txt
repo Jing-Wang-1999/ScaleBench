@@ -1,0 +1,22 @@
+Implement an 8-bit clock-divider wrapper with four observable clock outputs.
+
+Module Interface:
+module clock_divider_output_taps (
+    clock,
+    reset,
+    imem_clock,
+    dmem_clock,
+    processor_clock,
+    regfile_clock
+);
+
+- `clock` is the rising-edge input clock.
+- `reset` is an asynchronous active-high reset.
+- Maintain an 8-bit register `clk_div`.
+- On `reset`, set `clk_div` to `8'd0`.
+- Otherwise, increment `clk_div` by one on every rising edge of `clock`, with normal 8-bit wraparound.
+- Drive `imem_clock` from `clk_div[0]`.
+- Drive both `dmem_clock` and `regfile_clock` from `clk_div[5]`.
+- Drive `processor_clock` from `clk_div[7]`.
+
+The four outputs are continuous views of the counter bits and have no additional gating or state.

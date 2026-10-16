@@ -1,9 +1,0 @@
-index,legacy_task_id,task_id,gpt_4o_sec,gpt_4o_failure_kind,claude_sonnet_4_5_sec,claude_sonnet_4_5_failure_kind,qwen3_5_397b_sec,qwen3_5_397b_failure_kind,deepseek_v3_2_sec,deepseek_v3_2_failure_kind
-29,rtlpp_04609,clocked_signed_magnitude_calculator,fail,counterexample,,,fail,elaboration_error,fail,counterexample
-119,rtlpp_03967,dma_tdsp_bus_arbiter,fail,counterexample,,,fail,counterexample,fail,counterexample
-135,rtlpp_09966,z80_dual_psg_audio_controller,fail,counterexample,,,fail,elaboration_error,fail,elaboration_error
-142,rtlpp_06598,configurable_system_timer_50k_a,fail,counterexample,,,fail,counterexample,fail,counterexample
-143,rtlpp_02252,configurable_system_timer_50k_b,fail,counterexample,,,fail,counterexample,fail,counterexample
-144,rtlpp_06530,programmable_alarm_timer_50m,fail,counterexample,,,fail,counterexample,fail,counterexample
-151,rtlpp_10949,configurable_system_timer_50m,fail,counterexample,,,fail,elaboration_error,fail,counterexample
-192,rtlpp_06627,xr16_processor_core,fail,counterexample,,,fail,counterexample,fail,counterexample

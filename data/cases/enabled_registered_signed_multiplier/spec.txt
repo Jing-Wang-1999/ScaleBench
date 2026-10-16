@@ -1,0 +1,21 @@
+Implement a one-cycle registered signed multiplier. Treat `A` and `B` as
+32-bit two's-complement operands and produce their full 64-bit two's-complement
+product on `Res`.
+
+`reset` is an asynchronous active-high reset that clears `Res` to zero. On each
+rising edge of `clk`, when `enable` is high, update `Res` with the signed product
+of the current `A` and `B` values. When `enable` is low, hold the previous result.
+
+Every signed 32-by-32-bit product fits in 64 signed bits, so `OVF` is always
+zero. The implementation must not use `clk` as a data operand.
+
+Module Interface:
+module enabled_registered_signed_multiplier (
+    output [63:0] Res,
+    output        OVF,
+    input  [31:0] A,
+    input  [31:0] B,
+    input         clk,
+    input         reset,
+    input         enable
+);

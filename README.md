@@ -1,8 +1,6 @@
 # ScaleBench
 
-ScaleBench is a specification-to-RTL benchmark containing 200 Verilog designs. It was assembled for the CorrectRTL study from the RTL-PP corpus and selected to cover a broad range of design sizes.
-
-This repository contains the curated benchmark and its human-review website. Public cases use semantic names, malformed prompts have been repaired, and compact historical evaluation outcomes are retained for audit. Generated RTL, raw model responses, RAG databases, plots, logs, and paper build products are intentionally excluded.
+ScaleBench is a specification-to-RTL benchmark containing 200 semantically named Verilog design cases. Each case provides a natural-language specification, a model-hidden reference implementation, and a JasperGold sequential-equivalence script.
 
 ## Dataset summary
 
@@ -11,11 +9,10 @@ This repository contains the curated benchmark and its human-review website. Pub
 | Designs | 200 |
 | Sequential | 152 |
 | Combinational | 48 |
-| Minimum reference LoC | 30 |
-| Maximum reference LoC | 348 |
-| Mean reference LoC | 127.935 |
+| Reference size | 29–348 lines |
+| Mean reference size | 123.2 lines |
 
-## Layout
+## Case package
 
 ```text
 data/
@@ -27,80 +24,39 @@ data/
       reference.v
       sec.tcl
     ...
-review/
-  RELEASE_CHECKLIST.md
-  DESCRIPTION_REPAIR_REPORT.md
-  ALL_CASE_AUDIT.md
-  all_case_audit.csv
-  case_review.csv
-  semantic_names.csv
-  description_fixes.csv
-  flagged_cases.csv
-evaluation/
-  README.md
+viewer/
 scripts/
-  extract_release.py
-  apply_curations.py
-  import_baseline_results.py
-  eval_generate.py
-  eval_verify.py
+  build_viewer.py
+  refresh_manifest.py
   validate.py
 ```
 
-Each case contains:
+For evaluation, give the model only `spec.txt` and ask it to produce one complete synthesizable Verilog module with the stated top name and interface. Keep `reference.v` and `sec.tcl` hidden until scoring. A case passes when JasperGold SEC proves the generated module equivalent to the reference.
 
-- `spec.txt`: the curated natural-language prompt. Confirmed implementation leakage and mismatched descriptions/interfaces have been repaired.
-- `reference.v`: the golden Verilog implementation.
-- `sec.tcl`: the JasperGold sequential-equivalence script retained as verification metadata. It expects the original `input/rtl/<task>.v0.v` and `<task>.v1.v` staging convention and requires Cadence JasperGold.
+`data/manifest.json` is the canonical machine-readable index. It contains only release metadata: semantic task identifiers, design type, reference size, paths, and SHA-256 digests.
 
-`data/manifest.json` is the canonical machine-readable index. It uses repository-relative paths and includes SHA-256 digests. Public `task_id` values are semantic Verilog identifiers; internal `rtlpp_NNNNN` values are retained only as `legacy_task_id` provenance metadata. `data/manifest.csv` is a compact review view.
+## Case browser
 
-Use `review/case_review.csv` as the editable manual-review ledger. Its blank status columns are intentionally separate from the canonical manifest and can be filled in one case at a time.
-
-## Validation
-
-Only Python 3 and its standard library are needed to validate the benchmark structure:
-
-```bash
-python3 scripts/validate.py
-```
-
-The validator checks case count and uniqueness, semantic task IDs, relative paths, file hashes, top-module names, review flags, accidental local paths, and oversized files. The curated tree has no remaining prompt implementation-body or missing-interface flags. `review/flagged_cases.csv` retains two missing-memory-image cases, ten golden-reference cases that require quarantine review, and four additional references that need toolchain compatibility review after an Icarus elaboration smoke test.
-
-## Benchmark profile and case browser
-
-The dependency-free website in `viewer/` has two entry points:
-
-- `index.html` is the benchmark profile: task definition, corpus composition, evaluation protocol, and baseline context.
-- `review.html` is the human case browser: a paginated 200-case index, semantic-name search, curation filters, case audit details, and individual views for `spec.txt`, `reference.v`, and `sec.tcl`.
-
-The case page clearly marks `spec.txt` as the model input and the reference RTL, SEC script, audit findings, and baseline results as human-only material. Manual review state is stored in browser-local storage. Legacy source-corpus identifiers are deliberately excluded from the public interface.
-
-Build and preview it locally:
+The dependency-free website provides a compact benchmark profile and a browser for all 200 cases:
 
 ```bash
 python3 scripts/build_viewer.py --output _site
 python3 -m http.server 8000 --directory _site
 ```
 
-Then open `http://127.0.0.1:8000/` for the benchmark profile or `http://127.0.0.1:8000/review.html` for the case browser. The GitHub Pages workflow publishes the same build at `https://jing-wang-1999.github.io/ScaleBench/` when the repository is public and Pages is configured to use GitHub Actions.
+Open `http://127.0.0.1:8000/` for the profile or `http://127.0.0.1:8000/review.html#task=spec2rtl` for the case browser. GitHub Actions publishes the same build at [jing-wang-1999.github.io/ScaleBench](https://jing-wang-1999.github.io/ScaleBench/).
 
-## Curation audit
+## Validation
 
-All 200 cases were renamed according to their described function. Thirty-three prompts with confirmed structural defects were repaired. A reference-aware audit then examined the 20 cases that both complete baseline model runs failed and that also had a concrete data issue: eight are suitable for fresh evaluation, two are blocked by missing memory images, and ten are quarantined for pathological golden RTL.
+Refresh hashes and reference line counts after an intentional case change, then validate the complete release:
 
-See [`review/ALL_CASE_AUDIT.md`](review/ALL_CASE_AUDIT.md) for the complete 200-case table and [`review/DESCRIPTION_REPAIR_REPORT.md`](review/DESCRIPTION_REPAIR_REPORT.md) for detailed repair rationale.
+```bash
+python3 scripts/refresh_manifest.py
+python3 scripts/validate.py
+```
 
-## Evaluation
+The validator checks the 200-case inventory, semantic identifiers, public manifest schema, file hashes, module names, specification interfaces, self-contained references, case-package contents, public/private boundary, and Icarus elaboration when `iverilog` is available.
 
-Generate a candidate Verilog implementation from `spec.txt`, with the exact module name and interface stated there, and compare it against `reference.v` using formal equivalence. The included TCL files document the study flow, but the commercial verifier itself is not distributed.
+## Provenance
 
-The compact baseline ledgers report GPT-4o at 29/200 (14.5%) and Claude Sonnet 4.5 at 41/200 (20.5%), with 142 cases failed by both. Fresh single-sample evaluation on the eight `repaired_evaluation_ready` cases produced 0/8 SEC passes for GPT-4o, Qwen 3.5 397B A17B, and DeepSeek V3.2. The configured Jiekou account lacked sufficient balance for the fresh Claude run; using the funded OpenRouter account as an alternate route requires separate approval. See [`evaluation/README.md`](evaluation/README.md) and the repair report for the per-case breakdown.
-
-## Provenance and licensing
-
-See [UPSTREAM.md](UPSTREAM.md) for dataset provenance. A repository-level license has deliberately not been selected during extraction; [LICENSE_REVIEW.md](LICENSE_REVIEW.md) records the decision that must be completed before public release.
-
-## Review status
-
-This benchmark is staged for manual review. Review every row in `review/case_review.csv` and `review/flagged_cases.csv`, resolve the quarantine/missing-asset decisions, and complete the licensing and citation items in `review/RELEASE_CHECKLIST.md` before making the repository public.
+ScaleBench was selected from the RTL-PP dataset for the CorrectRTL study. See [UPSTREAM.md](UPSTREAM.md) for source and licensing information.

@@ -1,0 +1,59 @@
+Implement `or1k_data_bus_bridge` as a stateless transparent bridge
+between the OR1K data-memory request interface and the external data bus. This
+reduced task does not implement a cache, tag RAM, data RAM, invalidation, or a
+cache-control state machine. Inputs `clk`, `rst`, `dc_en`, `dcqmem_ci_i`,
+`spr_cs`, `spr_write`, and `spr_dat_i` are intentionally unused.
+
+Use the following exact combinational mappings for parameterized data width
+`dw` (default 32):
+
+- `dcsb_dat_o = dcqmem_dat_i`
+- `dcsb_adr_o = dcqmem_adr_i`
+- `dcsb_cyc_o = dcqmem_cycstb_i`
+- `dcsb_stb_o = dcqmem_cycstb_i`
+- `dcsb_we_o = dcqmem_we_i`
+- `dcsb_sel_o = dcqmem_sel_i`
+- `dcsb_cab_o = 0`
+- `dcqmem_dat_o = dcsb_dat_i`
+- `dcqmem_ack_o = dcsb_ack_i`
+- `dcqmem_rty_o = ~dcsb_ack_i`
+- `dcqmem_err_o = dcsb_err_i`
+- `dcqmem_tag_o = 4'hF` when `dcsb_err_i` is high; otherwise pass through
+  `dcqmem_tag_i`
+
+Module Interface:
+module or1k_data_bus_bridge #(
+    parameter dw = 32
+) (
+    input               clk,
+    input               rst,
+
+    output [dw-1:0]     dcsb_dat_o,
+    output [31:0]       dcsb_adr_o,
+    output              dcsb_cyc_o,
+    output              dcsb_stb_o,
+    output              dcsb_we_o,
+    output [3:0]        dcsb_sel_o,
+    output              dcsb_cab_o,
+    input  [dw-1:0]     dcsb_dat_i,
+    input               dcsb_ack_i,
+    input               dcsb_err_i,
+
+    input               dc_en,
+    input  [31:0]       dcqmem_adr_i,
+    input               dcqmem_cycstb_i,
+    input               dcqmem_ci_i,
+    input               dcqmem_we_i,
+    input  [3:0]        dcqmem_sel_i,
+    input  [3:0]        dcqmem_tag_i,
+    input  [dw-1:0]     dcqmem_dat_i,
+    output [dw-1:0]     dcqmem_dat_o,
+    output              dcqmem_ack_o,
+    output              dcqmem_rty_o,
+    output              dcqmem_err_o,
+    output [3:0]        dcqmem_tag_o,
+
+    input               spr_cs,
+    input               spr_write,
+    input  [31:0]       spr_dat_i
+);

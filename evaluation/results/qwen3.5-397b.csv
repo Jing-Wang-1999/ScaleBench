@@ -1,9 +1,0 @@
-index,legacy_task_id,task_id,model,sec_result,failure_kind,error
-29,rtlpp_04609,clocked_signed_magnitude_calculator,qwen3.5-397b,fail,elaboration_error,
-119,rtlpp_03967,dma_tdsp_bus_arbiter,qwen3.5-397b,fail,counterexample,
-135,rtlpp_09966,z80_dual_psg_audio_controller,qwen3.5-397b,fail,elaboration_error,
-142,rtlpp_06598,configurable_system_timer_50k_a,qwen3.5-397b,fail,counterexample,
-143,rtlpp_02252,configurable_system_timer_50k_b,qwen3.5-397b,fail,counterexample,
-144,rtlpp_06530,programmable_alarm_timer_50m,qwen3.5-397b,fail,counterexample,
-151,rtlpp_10949,configurable_system_timer_50m,qwen3.5-397b,fail,elaboration_error,
-192,rtlpp_06627,xr16_processor_core,qwen3.5-397b,fail,counterexample,

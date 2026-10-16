@@ -1,50 +1,50 @@
-To generate Verilog code for the given module, produce a module with multiple modes of input and output handling, focusing on reset, clock signals, register operations, and timer updates.
+Create a deterministic memory-mapped I/O and timer controller named `direct_irq_io_timer_controller` with the exact interface below.
 
-1. **Summary**: Create a Verilog module that handles multiple I/O operations, interrupts, timers, and register control based on various clock and enable signals. This module integrates keyboard/mouse inputs, monitors freeze conditions, processes peripheral ports' data direction, and manages multiple counters for timers.
-
-2. **Control Flow Overview**:
-   - The module operates on a clock signal (`clk`) with enable signals (`clk7_en` and `clk7n_en`).
-   - Registers react to read (`rd`), write (`wr`), and reset (`reset`) signals.
-   - Data buses (`porta_in`, `portb_in`, `data_in`, and `kbd_mouse_data`) interact with internal registers based on selected register addresses (`rs`).
-
-3. **Key Signal Interactions**:
-   - **Enable Signal**: `aen & (rd | wr)` controls register access.
-   - **Data Output**: `data_out` combines various internal registers' states.
-   - **Keyboard/Mouse Handling**: `keystrobe` detects new data, updates the serial data register (`sdr_latch`), and sets a freeze condition if specific data is detected.
-   - **Timers**: Three timers (`tmra`, `tmrb`, `tmrd`) are updated based on clock and enable signals, affecting the interrupt output (`irq`).
-   - **Port Registers**: Peripheral A and B registers (`pra`, `prb`, `ddra`, `ddrb`) are controlled by enable signals and data direction registers. 
-   - **Serial Transmission**: Logic to manage serial transmission count (`ser_tx_cnt`) and run enable (`ser_tx_run`).
-
-Here is an outline to follow for Verilog code generation:
-
-Module Interface:
+```verilog
 module direct_irq_io_timer_controller
 (
-	input        clk,           
-	input        clk7_en,
-	input        clk7n_en,
-	input        aen,           
-	input        rd,            
-	input        wr,            
-	input        reset,         
-	input  [3:0] rs,            
-	input  [7:0] data_in,       
-	output [7:0] data_out,      
-	input        tick,          
-	input        eclk,          
-	output       irq,           
-	input  [7:2] porta_in,      
-	output [3:0] porta_out,     
-	input  [7:0] portb_in,      
-
-	input        kms_level,
-	input  [1:0] kbd_mouse_type,
-	input  [7:0] kbd_mouse_data,
-	output       freeze,        
-	input        hrtmon_en
+    input        clk,
+    input        clk7_en,
+    input        clk7n_en,
+    input        aen,
+    input        rd,
+    input        wr,
+    input        reset,
+    input  [3:0] rs,
+    input  [7:0] data_in,
+    output [7:0] data_out,
+    input        tick,
+    input        eclk,
+    output       irq,
+    input  [7:2] porta_in,
+    output [3:0] porta_out,
+    input  [7:0] portb_in,
+    input        kms_level,
+    input  [1:0] kbd_mouse_type,
+    input  [7:0] kbd_mouse_data,
+    output       freeze,
+    input        hrtmon_en
 );
+```
 
-Behavioral Clarifications:
-- The interrupt output irq is driven as: irq = ta | tb | alrm | (keystrobe | ser_tx_irq), where ta=tmra_ovf and tmra_ovf fires when the 16-bit counter equals 16'hFFFF. Timer B (16-bit) fires when its counter equals 16'hFFFF. Timer D (24-bit) fires when its counter equals 24'hFFFFFF. All three counters increment on each `posedge clk` when `clk7_en` is asserted; Timer D does not use `tick` or `eclk` for counting.
-- The icr register is a simple 8-bit data register (write stores data_in, read returns it); it does not auto-set bits from interrupt sources.
-- `spmode` is declared but never driven in the reference, so serial-transmit behavior is not fully deterministic. This case is quarantined from model comparison pending a policy for undriven reference state.
+All state uses the rising edge of `clk` and has a synchronous active-high `reset`. A bus read occurs when `aen && rd && !wr`; a bus write occurs when `aen && wr`. Reads outside an implemented address return zero, and `data_out` is zero when no read is active. `tick` and `eclk` are unused compatibility inputs.
+
+Register map:
+
+| `rs` | Read | Write |
+|---|---|---|
+| `0` | `{registered porta_in[7:2], porta_out[1:0]}` | Store `{data_in[7:6],data_in[1:0]}` in the four-bit port-A data register |
+| `1` | `portb_in` | No effect |
+| `2` | Port-A direction register | Port-A direction register |
+| `3` | Port-B direction register | Port-B direction register |
+| `4`,`5` | Timer-A low, high byte | Timer-A low, high byte |
+| `6`,`7` | Timer-B low, high byte | Timer-B low, high byte |
+| `8`,`9`,`A` | Timer-D low, middle, high byte | Timer-D low, middle, high byte |
+| `C` | Serial-data register | Serial-data register |
+| `D` | Eight-bit interrupt-control scratch register | Interrupt-control scratch register |
+
+Sample `porta_in` whenever `clk7_en` is high. Reset both direction registers and the port-A data register to zero. Drive `porta_out[3:2] = (~direction[7:6]) | data[3:2]` and `porta_out[1:0] = (~direction[1:0]) | data[1:0]`.
+
+Timers A and B are 16 bits and timer D is 24 bits. Reset all timers to zero. Whenever `clk7_en` is high, a selected byte write has priority; otherwise each timer increments by one modulo its width. Assert `irq` whenever timer A is `16'hffff`, timer B is `16'hffff`, timer D is `24'hffffff`, or the one-cycle keyboard/mouse strobe is active.
+
+On reset, clear the sampled keyboard level, strobe, serial-data register, and `freeze`. On each `clk7n_en` cycle, update the sampled `kms_level` and pulse the strobe for one cycle when the level changed and `kbd_mouse_type == 2'b10`. When that strobe is observed on a `clk7_en` cycle, load the serial-data register with `~{kbd_mouse_data[6:0],kbd_mouse_data[7]}` and set `freeze` exactly when `hrtmon_en && kbd_mouse_data == 8'h5f`; otherwise preserve both values until another keyboard/mouse event or a bus write to the serial-data register.

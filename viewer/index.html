@@ -45,7 +45,7 @@
           <div><strong>200</strong><span>Design cases</span></div>
           <div><strong>152</strong><span>Sequential</span></div>
           <div><strong>48</strong><span>Combinational</span></div>
-          <div><strong>30–348</strong><span>Reference LoC</span></div>
+          <div><strong>29–348</strong><span>Reference LoC</span></div>
         </div>
       </section>
 
@@ -119,18 +119,14 @@
               <strong>152 sequential · 48 combinational</strong>
             </article>
             <article>
-              <span>Prompt repairs</span>
-              <strong>23 repaired and review-ready</strong>
+              <span>Reference size</span>
+              <strong>29–348 lines of Verilog</strong>
             </article>
             <article>
-              <span>Pending curation</span>
-              <strong>12 isolated for review</strong>
+              <span>Verification</span>
+              <strong>JasperGold SEC per case</strong>
             </article>
           </div>
-          <p class="section-note">
-            The browser includes all 200 cases for transparent human review. Ten pathological references are quarantined
-            and two cases are blocked by missing memory images; their status is shown directly in the case index.
-          </p>
         </div>
       </section>
 
@@ -169,33 +165,13 @@
           </article>
         </div>
 
-        <div class="result-strip" aria-label="Historical baseline results">
-          <div>
-            <span>Historical baseline</span>
-            <strong>GPT-4o</strong>
-            <b>29 / 200</b>
-          </div>
-          <div>
-            <span>Historical baseline</span>
-            <strong>Claude Sonnet 4.5</strong>
-            <b>41 / 200</b>
-          </div>
-          <div>
-            <span>Audit cohort</span>
-            <strong>Failed by both</strong>
-            <b>142 / 200</b>
-          </div>
-        </div>
-        <p class="section-note">
-          Historical results are retained as audit evidence, not as a leaderboard. Prompt repair and fresh-evaluation status are recorded per case.
-        </p>
       </section>
 
       <section class="page-width review-callout" aria-labelledby="review-title">
         <div>
-          <p class="eyebrow">Human review</p>
+          <p class="eyebrow">Case browser</p>
           <h2 id="review-title">Inspect every benchmark case</h2>
-          <p>Filter the 200-case index, open any semantic design name, and inspect its specification, reference RTL, SEC script, audit finding, and evaluation history.</p>
+          <p>Filter the 200-case index, open any semantic design name, and inspect its specification, reference RTL, and SEC script.</p>
         </div>
         <a class="button button-primary" href="./review.html#task=spec2rtl">Open case browser →</a>
       </section>
