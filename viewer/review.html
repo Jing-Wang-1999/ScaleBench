@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Browse and manually inspect all 200 semantically named ScaleBench cases."
+    />
+    <title>ScaleBench · Case Browser</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <script src="./assets/app.js" defer></script>
+  </head>
+  <body class="review-page">
+    <a class="skip-link" href="#content">Skip to benchmark cases</a>
+    <header class="review-header">
+      <div class="page-width review-header-inner">
+        <a class="review-brand" href="./review.html">ScaleBench case browser</a>
+        <nav aria-label="Case browser navigation">
+          <a href="./index.html">Benchmark home</a>
+          <a href="#task=spec2rtl">All cases</a>
+          <a href="#guide">Review guide</a>
+        </nav>
+      </div>
+    </header>
+    <main class="browser-width" id="content" tabindex="-1" aria-live="polite">
+      <div class="loading-state">
+        <span class="loading-mark" aria-hidden="true"></span>
+        <p>Loading ScaleBench cases…</p>
+      </div>
+    </main>
+    <footer class="browser-footer browser-width">
+      <span>ScaleBench · 200 specification-to-RTL cases</span>
+      <span>Manual review state stays in this browser.</span>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

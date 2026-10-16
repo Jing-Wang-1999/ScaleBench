@@ -2,7 +2,7 @@
 
 ScaleBench is a specification-to-RTL benchmark containing 200 Verilog designs. It was assembled for the CorrectRTL study from the RTL-PP corpus and selected to cover a broad range of design sizes.
 
-This repository is a review-ready, curated release of the benchmark. Public cases use semantic names, malformed prompts have been repaired, and compact historical evaluation outcomes are retained for audit. Generated RTL, raw model responses, RAG databases, plots, logs, and paper build products are intentionally excluded.
+This repository contains the curated benchmark and its human-review website. Public cases use semantic names, malformed prompts have been repaired, and compact historical evaluation outcomes are retained for audit. Generated RTL, raw model responses, RAG databases, plots, logs, and paper build products are intentionally excluded.
 
 ## Dataset summary
 
@@ -59,7 +59,7 @@ Use `review/case_review.csv` as the editable manual-review ledger. Its blank sta
 
 ## Validation
 
-Only Python 3 and its standard library are needed to validate the release structure:
+Only Python 3 and its standard library are needed to validate the benchmark structure:
 
 ```bash
 python3 scripts/validate.py
@@ -67,9 +67,14 @@ python3 scripts/validate.py
 
 The validator checks case count and uniqueness, semantic task IDs, relative paths, file hashes, top-module names, review flags, accidental local paths, and oversized files. The curated tree has no remaining prompt implementation-body or missing-interface flags. `review/flagged_cases.csv` retains two missing-memory-image cases, ten golden-reference cases that require quarantine review, and four additional references that need toolchain compatibility review after an Icarus elaboration smoke test.
 
-## Benchmark viewer
+## Benchmark profile and case browser
 
-The dependency-free viewer in `viewer/` lets reviewers browse all 200 cases by semantic task name, filter by design type and curation status, inspect `spec.txt`, `reference.v`, and `sec.tcl`, and mark cases reviewed in browser-local storage. Legacy RTLPP identifiers are deliberately excluded from the public interface.
+The dependency-free website in `viewer/` has two entry points:
+
+- `index.html` is the benchmark profile: task definition, corpus composition, evaluation protocol, and baseline context.
+- `review.html` is the human case browser: a paginated 200-case index, semantic-name search, curation filters, case audit details, and individual views for `spec.txt`, `reference.v`, and `sec.tcl`.
+
+The case page clearly marks `spec.txt` as the model input and the reference RTL, SEC script, audit findings, and baseline results as human-only material. Manual review state is stored in browser-local storage. Legacy source-corpus identifiers are deliberately excluded from the public interface.
 
 Build and preview it locally:
 
@@ -78,7 +83,7 @@ python3 scripts/build_viewer.py --output _site
 python3 -m http.server 8000 --directory _site
 ```
 
-Then open `http://127.0.0.1:8000/`. The GitHub Pages workflow publishes the same build at `https://jing-wang-1999.github.io/ScaleBench/` when the repository is public and Pages is configured to use GitHub Actions.
+Then open `http://127.0.0.1:8000/` for the benchmark profile or `http://127.0.0.1:8000/review.html` for the case browser. The GitHub Pages workflow publishes the same build at `https://jing-wang-1999.github.io/ScaleBench/` when the repository is public and Pages is configured to use GitHub Actions.
 
 ## Curation audit
 
@@ -96,6 +101,6 @@ The compact baseline ledgers report GPT-4o at 29/200 (14.5%) and Claude Sonnet 4
 
 See [UPSTREAM.md](UPSTREAM.md) for dataset provenance. A repository-level license has deliberately not been selected during extraction; [LICENSE_REVIEW.md](LICENSE_REVIEW.md) records the decision that must be completed before public release.
 
-## Release status
+## Review status
 
-This tree is staged for manual review. Review every row in `review/case_review.csv` and `review/flagged_cases.csv`, resolve the quarantine/missing-asset decisions, and complete the licensing and citation items in `review/RELEASE_CHECKLIST.md` before making the repository public.
+This benchmark is staged for manual review. Review every row in `review/case_review.csv` and `review/flagged_cases.csv`, resolve the quarantine/missing-asset decisions, and complete the licensing and citation items in `review/RELEASE_CHECKLIST.md` before making the repository public.

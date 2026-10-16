@@ -5,147 +5,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Browse and manually review all 200 semantically named ScaleBench RTL design cases."
+      content="ScaleBench is a 200-case benchmark for specification-to-RTL generation with formal equivalence verification."
     />
-    <title>ScaleBench Explorer</title>
+    <title>ScaleBench · Specification-to-RTL Benchmark</title>
     <link rel="stylesheet" href="./assets/styles.css" />
-    <script src="./assets/app.js" defer></script>
   </head>
-  <body>
-    <a class="skip-link" href="#case-detail">Skip to selected case</a>
+  <body class="profile-page">
+    <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
-      <a class="brand" href="./" aria-label="ScaleBench Explorer home">
-        <span class="brand-mark" aria-hidden="true">SB</span>
-        <span>
-          <strong>ScaleBench</strong>
-          <small>Benchmark explorer</small>
-        </span>
-      </a>
-      <nav aria-label="Project links">
-        <a href="#browser">Browse cases</a>
-        <a href="./review/ALL_CASE_AUDIT.md">Audit</a>
-        <a href="https://github.com/Jing-Wang-1999/scalebench">Repository</a>
+      <nav class="navigation page-width" aria-label="Main navigation">
+        <a class="brand" href="./index.html">
+          ScaleBench
+          <span>Benchmark</span>
+        </a>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#task">Task</a>
+          <a href="#protocol">Protocol</a>
+          <a class="nav-review" href="./review.html#task=spec2rtl">Browse cases <span aria-hidden="true">↗</span></a>
+        </div>
       </nav>
     </header>
 
-    <main>
-      <section class="hero" aria-labelledby="page-title">
-        <div class="hero-copy">
-          <p class="eyebrow">Specification-to-RTL benchmark</p>
-          <h1 id="page-title">Inspect every design.<br />One case at a time.</h1>
-          <p class="hero-summary">
-            A compact viewer for the curated ScaleBench release. Search semantic
-            design names, inspect prompts and reference RTL, and track your manual
-            review locally in the browser.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="#browser">Start reviewing</a>
-            <a class="button button-secondary" href="./data/manifest.json">Download manifest</a>
+    <main id="main">
+      <section class="hero page-width" aria-labelledby="hero-title">
+        <div class="eyebrow"><span class="status-dot"></span>Hardware design · RTL generation · Formal verification</div>
+        <h1 id="hero-title">ScaleBench</h1>
+        <p class="hero-subtitle">A 200-Case Benchmark for<br />Specification-to-RTL Generation</p>
+        <p class="hero-description">
+          ScaleBench evaluates whether a model can turn a natural-language hardware specification
+          into synthesizable Verilog that is formally equivalent to a hidden reference design.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="./review.html#task=spec2rtl">Browse all 200 cases <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="./data/manifest.json">Open machine-readable manifest</a>
+        </div>
+        <div class="metrics" aria-label="Benchmark at a glance">
+          <div><strong>200</strong><span>Design cases</span></div>
+          <div><strong>152</strong><span>Sequential</span></div>
+          <div><strong>48</strong><span>Combinational</span></div>
+          <div><strong>30–348</strong><span>Reference LoC</span></div>
+        </div>
+      </section>
+
+      <section id="overview" class="page-width section" aria-labelledby="overview-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Benchmark overview</p>
+            <h2 id="overview-title">One focused hardware-generation task</h2>
           </div>
+          <p>
+            Each case defines one semantic top module and a complete behavioral specification.
+            Case names describe the design instead of exposing source-corpus identifiers.
+          </p>
         </div>
 
-        <div class="stat-grid" aria-label="Dataset summary">
-          <article class="stat-card stat-card-primary">
-            <span class="stat-label">Design cases</span>
-            <strong id="stat-total">—</strong>
-            <small>semantic task names</small>
+        <div class="overview-grid">
+          <article class="info-card">
+            <span class="card-number">01 / Input</span>
+            <h3>Read a natural-language specification</h3>
+            <p>The evaluated model receives only <code>spec.txt</code>, including the exact module name and interface.</p>
           </article>
-          <article class="stat-card">
-            <span class="stat-label">Sequential</span>
-            <strong id="stat-sequential">—</strong>
-            <small>clocked designs</small>
+          <article class="info-card">
+            <span class="card-number">02 / Output</span>
+            <h3>Implement the complete RTL module</h3>
+            <p>The submission is one synthesizable Verilog implementation matching the required interface and behavior.</p>
           </article>
-          <article class="stat-card">
-            <span class="stat-label">Combinational</span>
-            <strong id="stat-combinational">—</strong>
-            <small>stateless designs</small>
-          </article>
-          <article class="stat-card">
-            <span class="stat-label">Reviewed locally</span>
-            <strong id="stat-reviewed">0</strong>
-            <small>saved in this browser</small>
+          <article class="info-card">
+            <span class="card-number">03 / Score</span>
+            <h3>Prove functional equivalence</h3>
+            <p>JasperGold SEC compares the submission with a model-hidden reference implementation.</p>
           </article>
         </div>
       </section>
 
-      <section class="browser-shell" id="browser" aria-labelledby="browser-title">
-        <aside class="case-browser" aria-label="Case browser">
-          <div class="browser-heading">
+      <section id="task" class="profile-band" aria-labelledby="task-title">
+        <div class="page-width section">
+          <div class="section-heading">
             <div>
-              <p class="eyebrow">Dataset index</p>
-              <h2 id="browser-title">All cases</h2>
+              <p class="eyebrow">Task catalog</p>
+              <h2 id="task-title">Specification-to-RTL generation</h2>
             </div>
-            <span class="result-count" id="result-count">Loading…</span>
+            <p>A single task formulation keeps comparisons direct and the evaluation contract easy to reproduce.</p>
           </div>
 
-          <div class="controls">
-            <label class="search-field">
-              <span>Search semantic names</span>
-              <input
-                id="search-input"
-                type="search"
-                placeholder="e.g. timer, AXI, CRC…"
-                autocomplete="off"
-              />
-            </label>
-
-            <div class="filter-grid">
-              <label>
-                <span>Design type</span>
-                <select id="type-filter">
-                  <option value="all">All types</option>
-                  <option value="sequential">Sequential</option>
-                  <option value="combinational">Combinational</option>
-                </select>
-              </label>
-              <label>
-                <span>Curation</span>
-                <select id="curation-filter">
-                  <option value="all">All cases</option>
-                  <option value="ready">Review ready</option>
-                  <option value="repaired">Prompt repaired</option>
-                  <option value="attention">Needs attention</option>
-                </select>
-              </label>
-              <label>
-                <span>Manual review</span>
-                <select id="review-filter">
-                  <option value="all">Any progress</option>
-                  <option value="unreviewed">Not reviewed</option>
-                  <option value="reviewed">Reviewed</option>
-                </select>
-              </label>
-              <label>
-                <span>Sort by</span>
-                <select id="sort-select">
-                  <option value="index">Case number</option>
-                  <option value="name">Design name</option>
-                  <option value="loc-desc">Largest first</option>
-                  <option value="loc-asc">Smallest first</option>
-                </select>
-              </label>
-            </div>
+          <div class="table-frame">
+            <table class="profile-table">
+              <thead>
+                <tr>
+                  <th scope="col">Task</th>
+                  <th scope="col">Scope</th>
+                  <th scope="col">Model input</th>
+                  <th scope="col">Submission</th>
+                  <th scope="col">Cases</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="./review.html#task=spec2rtl">Specification-to-RTL</a></td>
+                  <td>Single module</td>
+                  <td><code>spec.txt</code></td>
+                  <td>Complete Verilog module</td>
+                  <td><strong>200</strong></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
-          <div class="case-list" id="case-list" role="listbox" aria-label="ScaleBench cases"></div>
-        </aside>
-
-        <article class="case-detail" id="case-detail" tabindex="-1" aria-live="polite">
-          <div class="empty-state">
-            <span class="empty-glyph" aria-hidden="true">⌁</span>
-            <h2>Loading ScaleBench…</h2>
-            <p>The first semantically named design will appear here.</p>
+          <div class="composition-grid" aria-label="Dataset composition">
+            <article>
+              <span>Design style</span>
+              <strong>152 sequential · 48 combinational</strong>
+            </article>
+            <article>
+              <span>Prompt repairs</span>
+              <strong>23 repaired and review-ready</strong>
+            </article>
+            <article>
+              <span>Pending curation</span>
+              <strong>12 isolated for review</strong>
+            </article>
           </div>
-        </article>
+          <p class="section-note">
+            The browser includes all 200 cases for transparent human review. Ten pathological references are quarantined
+            and two cases are blocked by missing memory images; their status is shown directly in the case index.
+          </p>
+        </div>
+      </section>
+
+      <section id="protocol" class="page-width section" aria-labelledby="protocol-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Evaluation protocol</p>
+            <h2 id="protocol-title">A strict model / verifier boundary</h2>
+          </div>
+          <p>The public viewer exposes the complete evidence package to reviewers while marking what must remain hidden from an evaluated model.</p>
+        </div>
+
+        <div class="protocol-flow" aria-label="ScaleBench evaluation flow">
+          <article>
+            <span class="flow-label public-label">Model input</span>
+            <strong>Specification</strong>
+            <code>spec.txt</code>
+          </article>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <article>
+            <span class="flow-label generated-label">Generated</span>
+            <strong>Candidate RTL</strong>
+            <code>&lt;task_id&gt;.v</code>
+          </article>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <article>
+            <span class="flow-label hidden-label">Model-hidden</span>
+            <strong>Formal verification</strong>
+            <code>reference.v + sec.tcl</code>
+          </article>
+          <span class="flow-arrow" aria-hidden="true">→</span>
+          <article>
+            <span class="flow-label score-label">Score</span>
+            <strong>SEC result</strong>
+            <code>pass / fail</code>
+          </article>
+        </div>
+
+        <div class="result-strip" aria-label="Historical baseline results">
+          <div>
+            <span>Historical baseline</span>
+            <strong>GPT-4o</strong>
+            <b>29 / 200</b>
+          </div>
+          <div>
+            <span>Historical baseline</span>
+            <strong>Claude Sonnet 4.5</strong>
+            <b>41 / 200</b>
+          </div>
+          <div>
+            <span>Audit cohort</span>
+            <strong>Failed by both</strong>
+            <b>142 / 200</b>
+          </div>
+        </div>
+        <p class="section-note">
+          Historical results are retained as audit evidence, not as a leaderboard. Prompt repair and fresh-evaluation status are recorded per case.
+        </p>
+      </section>
+
+      <section class="page-width review-callout" aria-labelledby="review-title">
+        <div>
+          <p class="eyebrow">Human review</p>
+          <h2 id="review-title">Inspect every benchmark case</h2>
+          <p>Filter the 200-case index, open any semantic design name, and inspect its specification, reference RTL, SEC script, audit finding, and evaluation history.</p>
+        </div>
+        <a class="button button-primary" href="./review.html#task=spec2rtl">Open case browser →</a>
       </section>
     </main>
 
-    <footer>
-      <p>ScaleBench · 200 curated specification-to-RTL cases</p>
-      <p>Manual review progress stays in your browser and is never uploaded.</p>
+    <footer class="site-footer page-width">
+      <span><strong>ScaleBench</strong> · Specification-to-RTL Generation</span>
+      <div>
+        <a href="./review.html">Case browser</a>
+        <a href="https://github.com/Jing-Wang-1999/ScaleBench">Repository</a>
+      </div>
     </footer>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
 </html>

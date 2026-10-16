@@ -271,6 +271,7 @@ def main() -> int:
 
     viewer_files = (
         ROOT / "viewer" / "index.html",
+        ROOT / "viewer" / "review.html",
         ROOT / "viewer" / "assets" / "styles.css",
         ROOT / "viewer" / "assets" / "app.js",
         ROOT / "scripts" / "build_viewer.py",

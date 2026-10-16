@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the dependency-free ScaleBench browser for static hosting."""
+"""Build the dependency-free ScaleBench profile and case browser."""
 
 from __future__ import annotations
 
@@ -92,7 +92,7 @@ def build(root: Path, output: Path) -> None:
 
     sequential = sum(bool(record["is_sequential"]) for record in records)
     print(
-        f"built viewer: cases={len(records)}, sequential={sequential}, "
+        f"built benchmark site: cases={len(records)}, sequential={sequential}, "
         f"combinational={len(records) - sequential}, output={output.resolve()}"
     )
 
