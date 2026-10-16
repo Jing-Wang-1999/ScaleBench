@@ -1,0 +1,33 @@
+The Verilog module `microblaze_processor_interface` implements a MicroBlaze processor core interfacing with various signals for instruction fetch, data read/write, AXI transactions, and debug functionalities.
+
+1. **Primary Function**:
+   The module is a MicroBlaze soft processor core that interacts with memory/control signals for instruction fetch, data read/write operations, handles interrupts, and provides debug interface signals.
+
+2. **Key Control Flow**:
+   - The processor core starts and operates based on the clock signal (`Clk`) and can be reset using the `Reset` signal.
+   - It processes interrupts, acknowledges them, and fetches the instruction from a given address.
+   - Debug operations are controlled via debug signals like `Dbg_Clk`, `Dbg_TDI`, `Dbg_TDO`, `Dbg_Reg_En`, etc.
+
+3. **Important Data Processing and Signal Interactions**:
+   - **Instruction Fetch**: It fetches instructions from memory using `Instr_Addr` and `Instr`, with control signals `IFetch` and `I_AS` to manage the instruction fetch cycle. Signals `IReady`, `IWAIT`, `ICE`, and `IUE` are used to handle instruction fetch ready states, wait states, and error checks.
+   - **Data Transactions**: It reads and writes data at address `Data_Addr`, reads from `Data_Read`, and writes to `Data_Write`. The process uses control signals like `D_AS`, `Read_Strobe`, and `Write_Strobe` with handshakes (`DReady`, `DWait`, `DCE`, `DUE`) and byte enable signals `Byte_Enable` to manage data transactions.
+   - **AXI Interface**: For AXI transactions, the processor core uses address, control, and data signals (`M_AXI_DP_AWADDR`, `M_AXI_DP_AWPROT`, `M_AXI_DP_AWVALID`, etc.), and handshaking signals (`M_AXI_DP_AWREADY`, `M_AXI_DP_WREADY`, `M_AXI_DP_BVALID`, etc.) for proper AXI read/write functionality.
+   - **Interrupt Handling**: The core responds to interrupts and uses `Interrupt`, `Interrupt_Address`, and `Interrupt_Ack` to manage and acknowledge interrupt requests.
+   - **Debug Interface**: Signals like `Dbg_Clk`, `Dbg_TDI`, `Dbg_TDO`, `Dbg_Reg_En`, `Dbg_Shift`, `Dbg_Capture`, `Dbg_Update`, `Debug_Rst`, and `Dbg_Disable` manage debug operations for diagnosing and controlling the processor behavior.
+
+The purpose of this module is to implement a functional MicroBlaze processor that can fetch instructions, perform data transactions, handle interrupts, and provide debugging capabilities, all synchronized and controlled by input signals.
+
+Module Interface:
+module microblaze_processor_interface(
+    Clk, Reset, Interrupt, Interrupt_Address,
+    Interrupt_Ack, Instr_Addr, Instr, IFetch, I_AS, IReady, IWAIT, ICE, IUE, Data_Addr, Data_Read,
+    Data_Write, D_AS, Read_Strobe, Write_Strobe, DReady, DWait, DCE, DUE, Byte_Enable, M_AXI_DP_AWADDR,
+    M_AXI_DP_AWPROT, M_AXI_DP_AWVALID, M_AXI_DP_AWREADY, M_AXI_DP_WDATA, M_AXI_DP_WSTRB,
+    M_AXI_DP_WVALID, M_AXI_DP_WREADY, M_AXI_DP_BRESP, M_AXI_DP_BVALID, M_AXI_DP_BREADY,
+    M_AXI_DP_ARADDR, M_AXI_DP_ARPROT, M_AXI_DP_ARVALID, M_AXI_DP_ARREADY, M_AXI_DP_RDATA,
+    M_AXI_DP_RRESP, M_AXI_DP_RVALID, M_AXI_DP_RREADY, Dbg_Clk, Dbg_TDI, Dbg_TDO, Dbg_Reg_En,
+    Dbg_Shift, Dbg_Capture, Dbg_Update, Debug_Rst, Dbg_Disable
+);
+
+Behavioral Clarifications:
+- This is a port-declaration-only stub with no internal logic. Key widths: all address, instruction, and data buses are 32-bit; Interrupt_Ack is 2-bit; Byte_Enable is 4-bit; M_AXI_DP_AWPROT/ARPROT are 3-bit; M_AXI_DP_BRESP/RRESP are 2-bit; M_AXI_DP_WSTRB is 4-bit; Interrupt_Address is 32-bit; Dbg_Reg_En is 8-bit.

@@ -1,0 +1,83 @@
+The purpose of the `memory_data_controller` Verilog module is to process input data and control the output display segments based on various selection and clock signals. The module reads a 16-bit input data and transforms it into Binary Coded Decimal (BCD) format for display, utilizing selection signals to determine scaling and specific display outputs.
+
+1. **Primary Function:** The `memory_data_controller` facilitates display control by converting input data into BCD format and routing appropriate segments to output registers based on the `display_sel` and `sel` signals.
+
+2. **Key Control Flow:**
+   - When `display_sel` is high, the display outputs (`D1`, `D2`, `D3`, and `D4`) are directly assigned from the BCD converted data.
+   - When `display_sel` is low, the display outputs show a mix of zero and parts of the original input data.
+   - The `sel` signal decides between direct or scaled data conversion.
+
+3. **Key Signal and Data Interactions:**
+   - The module converts the binary input data into an unsigned format (`unsigned_data`) to handle potential sign bits.
+   - Depending on the `sel` value, the data may undergo scaling, primarily a multiplication by 10 unless a specific case (binary inversion and offset) is chosen.
+   - Once the data is prepared, it is converted into BCD format using an emulated `binary_to_bcd` function.
+   - BCD values are then assigned to BCD buffer registers on clock edges (`clk` and `dclk`), and further used for output control based on `display_sel`.
+
+### Instruction for an LLM to Generate the Verilog Code:
+
+1. **Summarize the primary function:**
+   Create a Verilog module named `memory_data_controller` that processes a 16-bit input data for display control. The module converts this data into BCD format and routes it to four display outputs based on control signals `display_sel` and `sel`.
+
+2. **Explain key control flow:**
+   - When `display_sel` is high, assign the top 12 bits of the BCD value to display outputs `D1` to `D4`.
+   - When `display_sel` is low, assign zeros to `D1` and parts of the input data to `D2`, `D3`, and `D4`.
+   - Use input `sel` to decide the appropriate scaling and transformation of the input data before BCD conversion.
+
+3. **Highlight important data processing:**
+   - Convert signed input data into unsigned format by taking care of the sign bit.
+   - If `sel` is not `11`, multiply the unsigned data by 10; otherwise, offset it using a specific constant.
+   - Perform BCD conversion on the processed data and assign the results to appropriate output segments.
+
+### Detailed Instruction:
+
+Create a Verilog module `memory_data_controller` which includes the following functionalities:
+
+- **Inputs:**
+  - `clk`: Clock signal.
+  - `dclk`: Data clock signal.
+  - `rst`: Reset signal.
+  - `display_sel`: Signal to control display output modes.
+  - `sel `[1:0]: Selection signal to decide data scaling.
+  - `data `[15:0]: Input data in binary format.
+
+- **Outputs:**
+  - `D1` [3:0]: Output display segment 1.
+  - `D2` [3:0]: Output display segment 2.
+  - `D3` [3:0]: Output display segment 3.
+  - `D4` [3:0]: Output display segment 4.
+
+- **Registers for intermediate processing:**
+  - `D1` to `D4` registers to hold BCD output segments.
+  - `bcd_buf `[15:0]: Buffer for intermediate BCD conversion.
+  - `bcd `[15:0]: Register to store final BCD value.
+
+- **Data processing steps:**
+  - Convert the signed `data` input to an unsigned format (`unsigned_data`).
+  - Scale or offset the `unsigned_data` based on `sel` and compute `unsigned_scaled_data`.
+  - On a positive clock or reset edge, update `bcd_buf` using a BCD conversion function on `unsigned_scaled_data`.
+  - Assign appropriate BCD segments to display outputs based on `display_sel`.
+
+- **Function for BCD conversion:**
+  - Implement `binary_to_bcd` function to convert a 16-bit binary value to a 16-bit BCD equivalent.
+
+### Full Verilog Code:
+Make sure to implement the described functionality accurately within the Verilog module to accomplish the intended display control and data processing requirements.
+
+Module Interface:
+module memory_data_controller(
+    clk,
+    dclk,
+    rst,
+    display_sel,
+    sel,
+    data,
+    D1,
+    D2,
+    D3,
+    D4
+);
+
+Behavioral Clarifications:
+- When sel==2'b11, the scaled value is computed as {4'b0000, (25 - (data - 25))} using the raw (possibly signed) data, not unsigned_data; the BCD sign indicator bcd[15:12] is set to 4'b1111 when data[15] is 1 and bcd[11:0] is nonzero, otherwise 4'b1010.
+- When sel==2'b11, bcd[11:0] is {bcd_buf[7:0], 4'b1011}; for all other sel values bcd[11:0] equals bcd_buf[11:0].
+- The binary_to_bcd function implements the double-dabble (shift-and-add-3) algorithm on the lower 16 bits only, producing a 16-bit BCD result.

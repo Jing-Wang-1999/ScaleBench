@@ -1,0 +1,8 @@
+This Verilog module defines a simple instruction memory system. Its primary function is to output an 18-bit instruction based on a given 10-bit address input. The module initializes a 1024x18-bit memory array with pre-defined instruction values within an initial block. The main operation occurs on the positive edge of the clock signal, where the instruction at the memory location specified by the address input is fetched and assigned to the output instruction register. This module utilizes synchronous read operations controlled by the clock signal to ensure proper timing and signal coordination. The system is structured to provide a specific instruction output based on the input address and a consistent clock-driven control flow.
+
+Module Interface:
+module synchronous_instruction_rom (address, instruction, clk);
+
+Behavioral Clarifications:
+- The memory array is 1024 entries deep, each 18 bits wide, indexed by the 10-bit address. Only the first 12 entries are explicitly initialized with non-zero values; all remaining locations default to zero.
+- There is one sequential always block triggered on posedge clk; it reads memory synchronously with no reset.

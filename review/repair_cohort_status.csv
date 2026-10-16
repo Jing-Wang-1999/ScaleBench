@@ -1,0 +1,21 @@
+index,legacy_task_id,task_id,gpt4o_baseline,claude_sonnet_4_5_baseline,curation_status,audit_finding
+12,rtlpp_09027,ddr2_sequencer_memory_4kx32,fail,fail,blocked_missing_memory_image,Required sequencer ROM image is absent
+18,rtlpp_05194,soc_instruction_memory_16kx32,fail,fail,blocked_missing_memory_image,Required SoC instruction-memory image is absent
+29,rtlpp_04609,clocked_signed_magnitude_calculator,fail,fail,repaired_evaluation_ready,Removed inconsistent embedded implementation and retained exact golden quirks
+118,rtlpp_10778,multimedia_soc_gpio_router,fail,fail,quarantined_golden_pathology,Golden integration shell has undriven and multiply-driven nets
+119,rtlpp_03967,dma_tdsp_bus_arbiter,fail,fail,repaired_evaluation_ready,Removed implementation leak and corrected asynchronous reset semantics
+135,rtlpp_09966,z80_dual_psg_audio_controller,fail,fail,repaired_evaluation_ready,Restored matched top description and full top interface
+142,rtlpp_06598,configurable_system_timer_50k_a,fail,fail,repaired_evaluation_ready,Restored matched timer and exact reset defaults
+143,rtlpp_02252,configurable_system_timer_50k_b,fail,fail,repaired_evaluation_ready,Restored matched timer and exact reset defaults
+144,rtlpp_06530,programmable_alarm_timer_50m,fail,fail,repaired_evaluation_ready,Replaced unrelated VGA prompt with matched timer and exact defaults
+145,rtlpp_11451,nios_jtag_debug_control_stub,fail,fail,quarantined_golden_pathology,Golden truncates debug data and contains undriven state
+146,rtlpp_09933,vga_game_controller_stub,fail,fail,quarantined_golden_pathology,Golden game and display state is partly undriven
+151,rtlpp_10949,configurable_system_timer_50m,fail,fail,repaired_evaluation_ready,Replaced unrelated AXI prompt with matched timer and exact defaults
+171,rtlpp_10431,csa_multiplier_with_stalled_output,fail,fail,quarantined_golden_pathology,Golden result-update branch is unreachable
+175,rtlpp_11646,multimedia_soc_interface_stub,fail,fail,quarantined_golden_pathology,Golden peripheral shell is incomplete and drives declared inputs
+182,rtlpp_04038,or1k_data_cache_wrapper_stub,fail,fail,quarantined_golden_pathology,Golden cache helper modules are empty
+189,rtlpp_06775,direct_irq_io_timer_controller,fail,fail,quarantined_golden_pathology,Corrected timer semantics but spmode remains undriven
+192,rtlpp_06627,xr16_processor_core,fail,fail,repaired_evaluation_ready,Replaced unrelated AXI prompt with matched simplified processor behavior
+193,rtlpp_07830,axi_master_engine_stub_a,fail,fail,quarantined_golden_pathology,Golden AXI engine helpers are empty
+194,rtlpp_07874,axi_master_engine_stub_b,fail,fail,quarantined_golden_pathology,Golden AXI engine helpers are empty and case is a near-duplicate
+198,rtlpp_04020,masked_irq_io_timer_controller,fail,fail,quarantined_golden_pathology,IRQ state is unassigned and timer latches are unreset

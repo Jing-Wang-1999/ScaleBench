@@ -1,0 +1,13 @@
+{
+  "created_at": "2026-09-03T10:54:56.448427+00:00",
+  "model": "gpt-4o",
+  "server_profile": "acf3036",
+  "total": 8,
+  "passed": 0,
+  "failed": 8,
+  "errors": 0,
+  "pass_rate": 0.0,
+  "outcome_counts": {
+    "counterexample": 8
+  }
+}

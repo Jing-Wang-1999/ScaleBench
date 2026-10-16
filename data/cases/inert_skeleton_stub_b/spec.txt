@@ -1,0 +1,21 @@
+1. **Primary Function**: The Verilog module, named "skeleton", manages clock signals and memory operations, dividing the input clock and generating specific clock signals for various submodules (instruction memory, data memory, register file, and processor) and enabling basic memory operations for instruction and data memories as well as a register file.
+
+2. **Key Control Flow**:
+    - On each positive edge of the main clock or when a reset signal is triggered, `clk_div` is either incremented or reset to 0. This governs the creation of the various divided clocks.
+    - On positive edges of the specific submodule clocks, memory operations are performed, such as reading from or writing to the instruction memory, data memory, and register file.
+    - The processor clock controls basic processor state updates, simulating address and data signals driving memory interactions and register file operations.
+
+3. **Important Data Interactions**:
+    - **Clock Division**: The `clk_div` register is used to generate multiple clock signals (`imem_clock`, `dmem_clock`, `processor_clock`, and `regfile_clock`) by selecting appropriate bits from the `clks` bus.
+    - **Instruction Memory Interaction**: Data from `mem_imem` is read and stored in `q_imem_reg` on the positive edge of `imem_clock` and then assigned to `q_imem`.
+    - **Data Memory Interaction**: Data is read from or written to `mem_dmem` based on the `wren` signal on the positive edge of `dmem_clock`. The data is stored in `q_dmem_reg` before being assigned to `q_dmem`.
+    - **Register File Interaction**: Values in the `regfile` are written based on `ctrl_writeEnable`, `ctrl_writeReg`, and `data_writeReg` signals, or read into `data_readRegA` and `data_readRegB` based on `ctrl_readRegA` and `ctrl_readRegB` control signals on the positive edge of `regfile_clock`.
+
+Follow these instructions to generate the following detailed code structure for a Verilog module that manages clock generation, instruction and data memory functionalities, and register file operations with basic processor control logic.
+
+Module Interface:
+module inert_skeleton_stub_b(clock, reset, imem_clock, dmem_clock, processor_clock, regfile_clock);
+
+Behavioral Clarifications:
+- clk_div is an 8-bit counter; imem_clock = clks[0], dmem_clock = clks[5], regfile_clock = clks[5], processor_clock = clks[7]. Memories are 4096 x 32-bit arrays. The register file is 32 x 32-bit and initializes all entries to 0 on reset.
+- The processor state registers initialize to fixed non-zero values (address_imem=1, address_dmem=2, data=3, etc.) after reset deasserts, not to zero on every cycle.

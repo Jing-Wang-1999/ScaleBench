@@ -1,0 +1,50 @@
+To generate Verilog code for the given module, produce a module with multiple modes of input and output handling, focusing on reset, clock signals, register operations, and timer updates.
+
+1. **Summary**: Create a Verilog module that handles multiple I/O operations, interrupts, timers, and register control based on various clock and enable signals. This module integrates keyboard/mouse inputs, monitors freeze conditions, processes peripheral ports' data direction, and manages multiple counters for timers.
+
+2. **Control Flow Overview**:
+   - The module operates on a clock signal (`clk`) with enable signals (`clk7_en` and `clk7n_en`).
+   - Registers react to read (`rd`), write (`wr`), and reset (`reset`) signals.
+   - Data buses (`porta_in`, `portb_in`, `data_in`, and `kbd_mouse_data`) interact with internal registers based on selected register addresses (`rs`).
+
+3. **Key Signal Interactions**:
+   - **Enable Signal**: `aen & (rd | wr)` controls register access.
+   - **Data Output**: `data_out` combines various internal registers' states.
+   - **Keyboard/Mouse Handling**: `keystrobe` detects new data, updates the serial data register (`sdr_latch`), and sets a freeze condition if specific data is detected.
+   - **Timers**: Three timers (`tmra`, `tmrb`, `tmrd`) are updated based on clock and enable signals, affecting the interrupt output (`irq`).
+   - **Port Registers**: Peripheral A and B registers (`pra`, `prb`, `ddra`, `ddrb`) are controlled by enable signals and data direction registers. 
+   - **Serial Transmission**: Logic to manage serial transmission count (`ser_tx_cnt`) and run enable (`ser_tx_run`).
+
+Here is an outline to follow for Verilog code generation:
+
+Module Interface:
+module direct_irq_io_timer_controller
+(
+	input        clk,           
+	input        clk7_en,
+	input        clk7n_en,
+	input        aen,           
+	input        rd,            
+	input        wr,            
+	input        reset,         
+	input  [3:0] rs,            
+	input  [7:0] data_in,       
+	output [7:0] data_out,      
+	input        tick,          
+	input        eclk,          
+	output       irq,           
+	input  [7:2] porta_in,      
+	output [3:0] porta_out,     
+	input  [7:0] portb_in,      
+
+	input        kms_level,
+	input  [1:0] kbd_mouse_type,
+	input  [7:0] kbd_mouse_data,
+	output       freeze,        
+	input        hrtmon_en
+);
+
+Behavioral Clarifications:
+- The interrupt output irq is driven as: irq = ta | tb | alrm | (keystrobe | ser_tx_irq), where ta=tmra_ovf and tmra_ovf fires when the 16-bit counter equals 16'hFFFF. Timer B (16-bit) fires when its counter equals 16'hFFFF. Timer D (24-bit) fires when its counter equals 24'hFFFFFF. All three counters increment on each `posedge clk` when `clk7_en` is asserted; Timer D does not use `tick` or `eclk` for counting.
+- The icr register is a simple 8-bit data register (write stores data_in, read returns it); it does not auto-set bits from interrupt sources.
+- `spmode` is declared but never driven in the reference, so serial-transmit behavior is not fully deterministic. This case is quarantined from model comparison pending a policy for undriven reference state.

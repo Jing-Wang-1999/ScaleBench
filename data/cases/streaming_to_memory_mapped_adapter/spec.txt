@@ -1,0 +1,37 @@
+The `streaming_to_memory_mapped_adapter` Verilog module converts streaming data from a FIFO to a memory-mapped interface with optional support for unaligned access. It processes 32-bit data inputs on receiving an `enable` signal and considers control signals like `start`, `stall`, and `waitrequest`.
+
+Key control points include:
+1. On `reset`, internal state registers `barrelshifter_B_d1` and `bytes_to_next_boundary_minus_one_d1` are set to zero.
+2. On `start`, the module calculates `bytes_to_next_boundary` and shifts the FIFO data with a barrel shifter, storing parts of it accordingly.
+3. When `fifo_readack` is asserted, the module updates `barrelshifter_B_d1` using the current `barrelshifter_B`.
+
+Important data interactions:
+1. `fifo_data` is processed through barrel shifters to align unaligned accesses.
+2. `bytes_to_next_boundary` is derived from the address and used to determine how data should be shifted.
+3. Two paths for `write_data`: (a) for aligned access, directly from `fifo_data`, and (b) for unaligned access (when enabled), as a combination of shifted values.
+
+Outputs include:
+- `write_data`: The data to be written.
+- `fifo_readack`: Acknowledges data read from FIFO when all control conditions (FIFO not empty, no stall, no wait request, enable signal) are met.
+
+Module Interface:
+module streaming_to_memory_mapped_adapter (
+  clk,
+  reset,
+
+  enable,
+  address,
+  start,
+  waitrequest,
+  stall,
+  write_data,
+
+  fifo_data,
+  fifo_empty,
+  fifo_readack
+);
+
+Behavioral Clarifications:
+- Parameters default to DATA_WIDTH=32, BYTEENABLE_WIDTH_LOG2=2, ADDRESS_WIDTH=32, and UNALIGNED_ACCESS_ENABLE=0 (unaligned access disabled by default).
+- `barrelshifter_B_d1` is also cleared to zero on `start` (not only on reset), before accumulating shifted data on subsequent `fifo_readack` pulses.
+- When unaligned access is enabled, `fifo_readack` additionally requires `start` to be deasserted; the aligned path has no such restriction.

@@ -1,0 +1,67 @@
+The Verilog module implements an Adaptive Differential Pulse Code Modulation (ADPCM) encoder. It processes a sampled input audio signal (`x_in`) and generates a 4-bit compressed output (`y_out`), along with additional signals reflecting intermediate and final computation states.
+
+### Summary of Operation:
+
+1. **Primary Function**: This module is designed to perform ADPCM encoding by calculating a compressed version of input samples and maintaining state information required for adaptive prediction.
+
+2. **Key Control Flow**:
+   - **Reset Handling**: Initializes internal registers (`va`, `va_d`, `step`, `index`, `valpred`) to zero.
+   - **Main Processing (Triggered on Clock Edge)**:
+     - Updates `va_d` to the previous `va` value and `va` to the new input `x_in`.
+     - Updates the `step` size and `index` based on the calculated prediction values.
+     - Adjusts the predicted sample (`valpred`) based on the calculated difference and step size.
+
+3. **Data Processing & Signal Interactions**:
+   - **Difference Calculation**: Computes the difference between the current input sample (`va`) and the predicted sample (`valpred`), adjusting the sign and magnitude accordingly.
+   - **Step Size Adjustment**: Uses a predefined table to retrieve step size increments. The difference is compared against adjusted step sizes to determine adaptive quantization levels (`delta2`, `delta3`, `delta4`).
+   - **Prediction Update**: Modifies the predicted sample (`valpred`) based on quantized differences, ensuring it remains within valid range limits with overflow/underflow checks.
+   - **Index Calculation**: Updates the quantization index based on a look-up table and clamps it within bounds.
+   - **Output Assignment**: The final quantized and clamped differences (`delta4`) are assigned to the main output (`y_out`), and several other computed values are assigned to their respective outputs (`p_out`, `i_out`, `err`, `sz_out`, `s_out`).
+
+### Detailed Instructions:
+
+1. **Initialize and Reset**:
+   - Initialize registers (`va`, `va_d`, `step`, `index`, `valpred`) to `0` on `reset`.
+
+2. **Update Registers at Clock Edge**:
+   - On each clock cycle, if not in reset:
+     - Update `va_d` with the previous `va` and `va` with new `x_in`.
+     - Calculate the new step size using the index.
+     - Update `valpred` to the new predicted value.
+
+3. **Difference, Quantization, and Prediction**:
+   - Compute signed difference `diff0` between `va` and `valpred`.
+   - Adjust `diff1` based on the sign to ensure positive values.
+   - Compare `diff1` with step sizes to determine quantization levels (`delta2`, `delta3`, `delta4`), updating cumulative differences (`vpdiff2`, `vpdiff3`, `vpdiff4`).
+   - Modify `valpred` by adding or subtracting `vpdiff4` based on the sign.
+
+4. **Overflow and Index Handling**:
+   - Clamp the derived `valpred` to avoid overflow (`p3`).
+   - Adjust index using a look-up table and ensure it stays within defined limits.
+
+5. **Output Assignments**:
+   - Assign the quantized difference (`sdelta`) to `y_out`.
+   - Update prediction-related outputs (`p_out`, `i_out`).
+   - Provide additional intermediate results (`err`, `sz_out`, `s_out`).
+
+The ADPCM encoding operation is thus optimized through efficient control flow for conditions and continuous data flow for encoding calculations, ensuring that the output accurately represents compressed audio samples in real-time.
+
+Module Interface:
+module adpcm_codec
+  (
+    input clk,
+    input reset,
+    input signed [15:0] x_in,
+    output [3:0] y_out,
+    output signed [15:0] p_out,
+    output reg p_underflow, p_overflow,
+    output signed [7:0] i_out,
+    output reg i_underflow, i_overflow,
+    output signed [15:0] err,
+    output [14:0] sz_out,
+    output s_out
+  );
+
+Behavioral Clarifications:
+- The step table contains 89 entries (indices 0-88) with 15-bit values following the standard IMA ADPCM step table. The index adjustment table has 16 signed 5-bit entries: {-1,-1,-1,-1,2,4,6,8,-1,-1,-1,-1,2,4,6,8}.
+- The combinational block is sensitive to va, va_d, step, index, and valpred. Outputs p_out and i_out reflect the registered valpred and index (previous cycle values), not the combinationally updated ones. err is computed as va_d minus valpred.

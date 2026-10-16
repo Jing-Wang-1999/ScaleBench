@@ -1,0 +1,64 @@
+The Verilog module processor_memory_control_unit is designed to manage memory operations and address mapping for a processor unit based on various state and control signals. Here is a detailed explanation of its purpose and operation:
+
+1. **Summary of the Primary Function**:
+   The VCTL2 module orchestrates memory operations, including reading, writing, and address mapping, based on specific control and state inputs. It generates the necessary control signals for memory read/write cycles and address map reads/writes.
+
+2. **Key Control Flow or Decision Points**:
+   - The module decides when to initiate memory read/write operations (`memrd`, `memwr`) and address map reads/writes (`vm0rp`, `vm1rp`, `vm0wp`, `vm1wp`) based on the state of the processor (`state_decode`, `state_mmu`, `state_read`, `state_write`), the control signals (`destmem`, `dmapbenb`, `ifetch`), and specific instruction decoding (`ir`).
+   - The `vmaenb` and `vmasel` signals control the enabling and selection of the virtual memory address based on fetching instructions or the destination address.
+
+3. **Important Data Processing or Signal Interactions**:
+   - Signals `mapwr0` and `mapwr1` are determined by bits 25 and 26 of the input `vma` and the `wmap` control signal, which respectively control write permissions for the two virtual memory addresses.
+   - `early_vm0_rd` and `early_vm1_rd` are set based on instruction dispatch (`irdisp`), DMA enable (`dmapbenb`), or source map (`srcmap`) and influence the read permissions for the virtual memory addresses during decode and write cycles.
+   - `normal_vm0_rd` and `normal_vm1_rd` control regular read cycles for the corresponding virtual memory addresses, set by `wmap`.
+   - Various states (`state_decode`, `state_mmu`, `state_read`, `state_write`) in combination with the early and normal read signals decide when to activate read (`vm0rp`, `vm1rp`) and write (`vm0wp`, `vm1wp`) for the first and second virtual memory addresses.
+
+4. **Control Signal Breakdown**:
+   - The `mdsel` signal is determined by `destmdr` and `loadmd`.
+   - The module evaluates `wmap`, `memwr`, and `memrd` based on whether `destmem` is set and specific bits of the instruction register `ir`.
+   - The `memdrive` signal is set by `wrcyc` and `lm_drive_enb` but the `lm_drive_enb` is currently set to zero, indicating it's disabled.
+
+This understanding provides a clear operational flow for managing memory and address control, ensuring precise timing and correct action based on the state and control inputs provided to the module. Use this detailed structure to generate the Verilog code that efficiently implements these operations.
+
+Module Interface:
+module processor_memory_control_unit
+  (input wire       state_decode,
+   input wire       state_mmu,
+   input wire       state_read,
+   input wire       state_write,
+
+   input wire [31:0] vma,
+   input wire [48:0] ir,
+   input wire       destmdr,
+   input wire       destmem,
+   input wire       destvma,
+   input wire       dispwr,
+   input wire       dmapbenb,
+   input wire       ifetch,
+   input wire       irdisp,
+   input wire       loadmd,
+   input wire       memprepare,
+   input wire       memstart,
+   input wire       nopa,
+   input wire       srcmap,
+   input wire       srcmd,
+   input wire       wrcyc,
+   output wire      mdsel,
+   output wire      memdrive,
+   output wire      memrd,
+   output wire      memwr,
+   output wire      vm0rp,
+   output wire      vm0wp,
+   output wire      vm1rp,
+   output wire      vm1wp,
+   output wire      vmaenb,
+   output wire      vmasel,
+   output wire      wmap,
+
+   input wire      clk,
+   input wire      reset);
+
+Behavioral Clarifications:
+- The module is entirely combinational (no sequential always blocks); all outputs are driven by continuous assign statements.
+- `wmap`, `memwr`, and `memrd` are decoded together from `ir[20:19]`: if `destmem` is clear all three are 0; bits 01 give memrd, 10 give memwr, 11 give wmap.
+- `normal_vm1_rd` is hardwired to 0; `lm_drive_enb` is hardwired to 0, so `memdrive` is always 0.

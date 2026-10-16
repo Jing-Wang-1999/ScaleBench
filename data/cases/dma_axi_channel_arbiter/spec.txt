@@ -1,0 +1,48 @@
+### Instruction to Generate Verilog Code:
+
+The Verilog module, `dma_axi_channel_arbiter`, functions as an arbiter for managing DMA (Direct Memory Access) channels in a system. Here is a detailed description of its purpose and operation:
+
+1. **Primary Function**:
+   - This module is designed to arbitrate access to DMA channels, ensuring orderly data transfer management. It determines which channel has the highest priority and is ready to proceed with data transfer operations.
+
+2. **Key Control Flow or Decision Points**:
+   - **Reset and Enable**: It begins by looking at the `reset` and `enable` signals. If `reset` is active, the module will initialize or reset its internal states, disregarding other inputs. When `enable` is active, the module will start its normal arbitration process.
+   - **Priority Handling**: The module assesses inputs like `prio_top`, `prio_high`, and their respective numbers (`prio_top_num`, `prio_high_num`) to determine channel priorities.
+   - **Joint Operations**: Signals like `joint_mode` and `joint_req` influence the arbitration process to allow joint operations when necessary.
+
+3. **Important Data Processing or Signal Interactions**:
+   - **Channel Readiness and Activity**: The inputs `ch_ready` and `ch_active` provide the status of each channel, indicating which channels are ready and currently active.
+   - **Finalize Operations**: The `finish` signal indicates the completion of an ongoing DMA transaction, prompting the module to update its status and potentially allocate a new channel.
+   - **Channel Holding**: The `hold` signal allows operations to be paused, which the system takes into account to either continue or halt the current process flow.
+   - **Output Signals**: The primary output signals are `ch_go_out`, which indicates if a channel is given the go-ahead to initiate operations, `ch_num`, which shows the current channel number being serviced, and `ch_last`, which signals if the current channel is the last before the module resets or re-evaluates the channel list.
+
+### Summarized Control and Data Handling:
+1. The `ch_go_out`, `ch_num`, and `ch_last` are set to predefined static values, indicating a simplistic placeholder behavior in this snippet.
+2. Internally, the module assigns various `wire` and `reg` signals to manage the readiness and progress of channels, evaluating conditions to determine if channels can or should proceed based on their priority levels and readiness status. Although detailed logic for these evaluations isn't shown, these would involve using combinatorial logic gates and storage registers to maintain and transition states.
+
+This instruction should provide sufficient context for generating a comprehensive Verilog code for a DMA channel arbiter, capturing control flow dynamics and data dependencies clearly and concisely.
+
+Module Interface:
+module dma_axi_channel_arbiter (
+    clk,
+    reset,
+    enable,
+    joint_mode,
+    page_cross,
+    joint_req,
+    prio_top,
+    prio_high,
+    prio_top_num,
+    prio_high_num,
+    hold,
+    ch_ready,
+    ch_active,
+    finish,
+    ch_go_out,
+    ch_num,
+    ch_last
+);
+
+Behavioral Clarifications:
+- Parameter `CH_LAST` is defined as 0 (1-1). The golden RTL is a stub: `ch_go_out` is hardwired to 1, `ch_num` is hardwired to 3'b0, and `ch_last` is hardwired to 1 via simple assign statements. No sequential logic is present.
+- Port widths: `prio_top_num` and `prio_high_num` are 3-bit; `ch_ready` and `ch_active` are 8-bit; `ch_num` is 3-bit.

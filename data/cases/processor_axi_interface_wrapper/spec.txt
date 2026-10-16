@@ -1,0 +1,148 @@
+### Instruction:
+Create a Verilog module named `processor_axi_interface_wrapper` that interfaces with a Fuxi processor core. This module must manage interactions between the processor and external memory or peripheral devices through different AXI interfaces: instruction fetch (inst_), data access (data_), and uncached access (uncached_). The module processes various interrupts (irq_timer, irq_soft, irq_extern) and generates debug outputs for monitoring purposes.
+
+1. **Primary Function**:
+   - The module serves as a wrapper around the Fuxi processor core, managing external communication through AXI interfaces for instructions, data, and uncached accesses.
+
+2. **Control Flow**:
+   - Control signals such as clock (`clk`), reset (`rst`), and various IRQ lines (`irq_timer`, `irq_soft`, `irq_extern`) are input to control the processor's operations.
+   - All AXI output valid signals (`inst_arvalid`, `inst_awvalid`, `data_arvalid`, `data_awvalid`, `uncached_arvalid`, `uncached_awvalid`) are set to constant zero initially, indicating that no read or write transactions are currently valid.
+   - Similarly, read and write ready signals (`inst_rready`, `data_rready`, `uncached_rready`) are also set to constant zero.
+
+3. **Data Processing (Signal Interaction)**:
+   - The addresses (`inst_araddr`, `inst_awaddr`, `data_araddr`, `data_awaddr`, `uncached_araddr`, `uncached_awaddr`) and associated AXI control signals (`arid`, `arsize`, `arlen`, `arburst`, `arlock`, `arcache`, `arprot`, `awid`, `awsize`, `awlen`, `awburst`, `awlock`, `awcache`, `awprot`, etc.) for instruction, data, and uncached access are set to zero. This simplifies the initial state and suggests no active memory operation.
+   - All data lines (`inst_wdata`, `data_wdata`, `uncached_wdata`) and associated identifiers and control signals (`wid`, `wlast`, `wstrb`) are also initially set to zero, indicating no active write operation.
+
+4. **Debug Outputs**:
+   - Debug outputs (`debug_wen`, `debug_waddr`, `debug_wdata`, `debug_pc`) are set to zero, indicating no debug write operation is active.
+
+The initial instantiation should assign zero values to all outputs, implying that the module does not perform any active memory transactions upon initialization and requires further integration with the actual Fuxi processor's detailed functionalities to handle complex interactions and decision logic based on IRQ and ready/valid handshake signals. This setup prepares the necessary framework for a more detailed implementation matching the Fuxi core's requirements.
+
+Module Interface:
+module processor_axi_interface_wrapper(
+  input         clk,
+  input         rst,
+  
+  input         irq_timer,
+  input         irq_soft,
+  input         irq_extern,
+  
+  output        debug_wen,
+  output [4:0]  debug_waddr,
+  output [31:0] debug_wdata,
+  output [31:0] debug_pc,
+  
+  input         inst_arready,
+  output        inst_arvalid,
+  output [31:0] inst_araddr,
+  output [3:0]  inst_arid,
+  output [2:0]  inst_arsize,
+  output [7:0]  inst_arlen,
+  output [1:0]  inst_arburst,
+  output        inst_arlock,
+  output [3:0]  inst_arcache,
+  output [2:0]  inst_arprot,
+  output        inst_rready,
+  input         inst_rvalid,
+  input  [31:0] inst_rdata,
+  input  [3:0]  inst_rid,
+  input         inst_rlast,
+  input  [1:0]  inst_rresp,
+  input         inst_awready,
+  output        inst_awvalid,
+  output [31:0] inst_awaddr,
+  output [3:0]  inst_awid,
+  output [2:0]  inst_awsize,
+  output [7:0]  inst_awlen,
+  output [1:0]  inst_awburst,
+  output        inst_awlock,
+  output [3:0]  inst_awcache,
+  output [2:0]  inst_awprot,
+  input         inst_wready,
+  output        inst_wvalid,
+  output [31:0] inst_wdata,
+  output [3:0]  inst_wid,
+  output        inst_wlast,
+  output [3:0]  inst_wstrb,
+  output        inst_bready,
+  input         inst_bvalid,
+  input  [3:0]  inst_bid,
+  input  [1:0]  inst_bresp,
+  
+  input         data_arready,
+  output        data_arvalid,
+  output [31:0] data_araddr,
+  output [3:0]  data_arid,
+  output [2:0]  data_arsize,
+  output [7:0]  data_arlen,
+  output [1:0]  data_arburst,
+  output        data_arlock,
+  output [3:0]  data_arcache,
+  output [2:0]  data_arprot,
+  output        data_rready,
+  input         data_rvalid,
+  input  [31:0] data_rdata,
+  input  [3:0]  data_rid,
+  input         data_rlast,
+  input  [1:0]  data_rresp,
+  input         data_awready,
+  output        data_awvalid,
+  output [31:0] data_awaddr,
+  output [3:0]  data_awid,
+  output [2:0]  data_awsize,
+  output [7:0]  data_awlen,
+  output [1:0]  data_awburst,
+  output        data_awlock,
+  output [3:0]  data_awcache,
+  output [2:0]  data_awprot,
+  input         data_wready,
+  output        data_wvalid,
+  output [31:0] data_wdata,
+  output [3:0]  data_wid,
+  output        data_wlast,
+  output [3:0]  data_wstrb,
+  output        data_bready,
+  input         data_bvalid,
+  input  [3:0]  data_bid,
+  input  [1:0]  data_bresp,
+  
+  input         uncached_arready,
+  output        uncached_arvalid,
+  output [31:0] uncached_araddr,
+  output [3:0]  uncached_arid,
+  output [2:0]  uncached_arsize,
+  output [7:0]  uncached_arlen,
+  output [1:0]  uncached_arburst,
+  output        uncached_arlock,
+  output [3:0]  uncached_arcache,
+  output [2:0]  uncached_arprot,
+  output        uncached_rready,
+  input         uncached_rvalid,
+  input  [31:0] uncached_rdata,
+  input  [3:0]  uncached_rid,
+  input         uncached_rlast,
+  input  [1:0]  uncached_rresp,
+  input         uncached_awready,
+  output        uncached_awvalid,
+  output [31:0] uncached_awaddr,
+  output [3:0]  uncached_awid,
+  output [2:0]  uncached_awsize,
+  output [7:0]  uncached_awlen,
+  output [1:0]  uncached_awburst,
+  output        uncached_awlock,
+  output [3:0]  uncached_awcache,
+  output [2:0]  uncached_awprot,
+  input         uncached_wready,
+  output        uncached_wvalid,
+  output [31:0] uncached_wdata,
+  output [3:0]  uncached_wid,
+  output        uncached_wlast,
+  output [3:0]  uncached_wstrb,
+  output        uncached_bready,
+  input         uncached_bvalid,
+  input  [3:0]  uncached_bid,
+  input  [1:0]  uncached_bresp
+);
+
+Behavioral Clarifications:
+- This is a stub implementation: all output signals are driven to constant zero via combinational assign statements; no sequential logic is present. All three AXI channels (inst, data, uncached) use identical port structures: 32-bit address, 4-bit ID (arid/awid/wid), 3-bit size, 8-bit len, 2-bit burst, 32-bit wdata, 4-bit wstrb, and single-bit bready. No actual processor core is instantiated.

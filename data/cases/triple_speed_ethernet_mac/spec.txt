@@ -1,0 +1,69 @@
+### Instruction for Generating the Verilog Code
+
+The `triple_speed_ethernet_mac` Verilog module serves as a simplified model to handle Ethernet MAC (Media Access Control) functions interfacing with external hardware signals for both transmitting and receiving data. Here's a breakdown of its operation:
+
+1. **Primary Function**: 
+   - This module manages data transmission (`ff_tx_`) and reception (`ff_rx_`), processes MDIO (Management Data Input/Output) signals for PHY (Physical Layer) configuration, and controls various LED indicators for status.
+
+2. **Control Flow and Decision Points**:
+   - When `ff_tx_wren` (write enable) signal is asserted and `reset` is not active, the module sets the `ff_tx_rdy` (transmit ready) signal indicating readiness to transmit data.
+   - The transmit clock `ff_tx_clk` and receive clock `ff_rx_clk` are considered for synchronizing operations, though not explicitly used in the simplified logic.
+   - The `reset` signal acts as a global reset for the system, clearing the ready signal and potentially other internal states.
+   
+3. **Key Data Processing and Signal Interactions**:
+   - Transmitted data (`ff_tx_data`, `ff_tx_eop`, `ff_tx_mod`, `ff_tx_sop`) are directly passed to corresponding receive signals (`ff_rx_data`, `ff_rx_eop`, `ff_rx_mod`, `ff_rx_sop`), with `ff_tx_wren` signaling when data is valid (`ff_rx_dval`).
+   - MDIO input `mdio_in` is transferred directly to `mdio_out`, with `mdio_oen` controlling the output enable and `mdc` reflecting the clock signal.
+   - LED indicators such as `led_an`, `led_link`, and `led_crs` are set based on simple conditions; for example, the link status LEDs (`led_an`, `led_link`) are always active, while `led_crs` reflects `ff_rx_rdy`.
+   - The `readdata` register simply mirrors the `writedata` input for memory operations.
+   - Transmission (`txp`) and recovery clock output (`rx_recovclkout`) are outputs driven by the write enable signal and reference clock (`ref_clk`), respectively.
+
+Overall, ensure proper signal handling and minimal logic to connect inputs to outputs and drive appropriate status indicators.
+
+### Verilog Code Generation Supporting the Above Instruction
+
+This concise and clear instruction encapsulates the purpose and workings of the Verilog module sufficiently for an LLM to generate the described code.
+
+Module Interface:
+module triple_speed_ethernet_mac (
+	ff_tx_data,
+	ff_tx_eop,
+	ff_tx_err,
+	ff_tx_mod,
+	ff_tx_sop,
+	ff_tx_wren,
+	ff_tx_clk,
+	ff_rx_rdy,
+	ff_rx_clk,
+	address,
+	read,
+	writedata,
+	write,
+	clk,
+	reset,
+	mdio_in,
+	rxp,
+	ref_clk,
+	ff_tx_rdy,
+	ff_rx_data,
+	ff_rx_dval,
+	ff_rx_eop,
+	ff_rx_mod,
+	ff_rx_sop,
+	rx_err,
+	readdata,
+	waitrequest,
+	mdio_out,
+	mdio_oen,
+	mdc,
+	led_an,
+	led_char_err,
+	led_link,
+	led_disp_err,
+	led_crs,
+	led_col,
+	txp,
+	rx_recovclkout);
+
+Behavioral Clarifications:
+- Reset is active-low synchronous (posedge clk, checked with !aresetn); there are five separate sequential always blocks: one each for awready, wready, bvalid, arready, and the combined rdata/rvalid.
+- On read, rdata is hardcoded to 128'hDEADBEEFDEADBEEFDEADBEEFDEADBEEF; UART_tx is tied to 1'b0 as a stub.

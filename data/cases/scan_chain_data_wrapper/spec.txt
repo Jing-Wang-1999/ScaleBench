@@ -1,0 +1,32 @@
+The Verilog module `scan_chain_data_wrapper` acts as an interface that manages signals and data flow between various sub-modules and external inputs/outputs. Its primary function is to facilitate a scan chain operation, which involves selectively channeling input data through different pathways based on control signals.
+
+1. **Primary Function**: This module essentially serves as a wrapper to control the flow of scan and module data in and out based on clock, scan select, and latch enable signals. It ensures data is processed and transferred correctly across different parts of the system.
+
+2. **Key Control Flow or Decision Points**:
+   - The module uses the `clk_in` signal directly as `clk` and `clk_out` to synchronize data transfers.
+   - The `scan_select_in` signal dictates whether the data transfer occurs within the module itself or within the scan chain. If `scan_select_in` is high, `module_data_out` is transferred to `scan_data_out`; otherwise, `scan_data_in` is propagated to `scan_data_out`.
+   - The `latch_enable_in` signal triggers the registration of the current scan data into `module_data_in`.
+
+3. **Important Data Processing or Signal Interactions**:
+   - The incoming `data_in` signal is added to the existing scan data creating `scan_data_in`.
+   - The `data_out_i` signal is generated from the most significant bit of `scan_data_out` at every negative edge of the clock, this value is then output through `data_out`.
+   - The assignment and transfer of signals are managed through continuous assignments and sequential logic blocks, ensuring correct timing and sequencing.
+   - When `scan_select_in` is high, the `scan_data_out` register gets updated with `module_data_out`, else it gets updated with `scan_data_in` at every positive edge of the clock.
+   - `module_data_in` is updated with `scan_data_out` when `latch_enable_in` is asserted.
+
+This process properly sequences data through the scan chain mechanism, aiding in testability and debug operations typical in complex digital systems. By understanding and leveraging the control and data dependencies articulated, it ensures accurate signal routing and processing synchronously with the clock and control signals.
+
+Module Interface:
+module scan_chain_data_wrapper (
+    input wire clk_in,
+    input wire data_in,
+    input wire scan_select_in,
+    input wire latch_enable_in,
+    output wire clk_out,
+    output wire data_out,
+    output wire scan_select_out,
+    output wire latch_enable_out
+    );
+
+Behavioral Clarifications:
+- Parameter NUM_IOS=8. The data_out_i flip-flop has no reset and updates only on negedge clk. The user logic is a pass-through placeholder: module_data_out is driven by an intermediate wire assigned from module_data_in. scan_data_in is {scan_data_out[6:0], data_in}. clk_out, scan_select_out, and latch_enable_out are direct continuous assigns from clk, scan_select_in, and latch_enable_in respectively.

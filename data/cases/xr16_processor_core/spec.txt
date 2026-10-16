@@ -1,0 +1,26 @@
+The primary function of the Verilog module xr16_processor_core is to manage control and data paths for a simplified processing unit. The module takes various control signals, processes them based on clock and reset inputs, and produces several output control signals and values, including memory chip enable, next word read, next read operations, DMA requests, and address next values.
+
+Key control flow involves the sequential logic driven by the clock (`clk`) and reset (`rst`) signals. On reset, all control registers are cleared. When the readiness signal (`rdy`) is asserted, the control signals (`mem_ce`, `word_nxt`, `read_nxt`, `dbus_nxt`, `dma`) are updated based on the current instruction (`insn`) bits. The instruction bits are directly taken to set certain outputs and control signals, like writing to the register file, branch signals, and program counter control.
+
+Data interactions involve the propagation of the input instruction bits to the corresponding outputs and internal registers. Specifically, the `addr_nxt` and `d` signals are updated based on the values of `insn`. The `addr_nxt` register receives the address from the instruction, while the `d` register is reset to a dummy value when the system is ready.
+
+### Instruction for LLM:
+
+1. Create a Verilog module named `xr16_processor_core` which handles control and data paths for a processing unit.
+2. The module should have inputs: `clk`, `rst`, `rdy`, `ud_t`, `ld_t`, `udlt_t`, `int_req`, `dma_req`, `zerodma`, and `insn`.
+3. The module should have outputs: `mem_ce`, `word_nxt`, `read_nxt`, `dbus_nxt`, `dma`, `addr_nxt`, and bi-directional `d`.
+4. Declare internal registers to store control signal states such as `mem_ce_reg`, `word_nxt_reg`, `read_nxt_reg`, `dbus_nxt_reg`, `dma_reg`, and register file write enable, among others.
+5. Implement sequential logic in an always block triggered on the positive edge of `clk` or `rst`.
+   - On reset (`rst` high), clear all registers.
+   - When `rdy` is high, update the control registers based on specific bits of the `insn` input and `dma_req`.
+6. Output the values of these registers directly to corresponding output ports.
+7. Implement a secondary always block to manage the data path.
+   - On reset, clear the `addr_nxt` and `d` registers.
+   - When `rdy` is high, set the `addr_nxt` register based on `insn` and reset the `d` register to a dummy value.
+8. Connect the internal registers to their corresponding output ports for use in the overall system.
+
+Module Interface:
+module xr16_processor_core(
+	clk, rst, rdy, ud_t, ld_t, udlt_t, int_req, dma_req, zerodma,
+    insn, mem_ce, word_nxt, read_nxt, dbus_nxt, dma, addr_nxt, d
+);

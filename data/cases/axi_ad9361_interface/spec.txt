@@ -1,0 +1,113 @@
+**Instruction for Generating the Verilog Module:**
+
+1. **Primary Function Summary:**
+   This Verilog module is designed to interface with an AD9361 radio transceiver through AXI protocol and handle data transmission and reception. It coordinates various signals involved in data processing, enabling and syncing within the system.
+
+2. **Key Control Flow or Decision Points:**
+   - The module operates with clock signals for transmission (`tx_clk_out`) and reception (`rx_clk_in`), as well as frame signals (`tx_frame_out` and `rx_frame_in`).
+   - It properly manages `reset` functionality based on the AXI reset input (`s_axi_aresetn`).
+   - AXI signals control the readiness and validity of write and read operations (`s_axi_awready`, `s_axi_wready`, `s_axi_bvalid`, `s_axi_arready`, and `s_axi_rvalid`).
+
+3. **Important Data Processing or Signal Interactions:**
+   - Data received (`rx_data_in`) is transmitted (`tx_data_out`) directly.
+   - Control signals such as `enable` and `txnrx` are driven by higher-level inputs (`up_enable` and `up_txnrx` respectively).
+   - Various external synchronization signals (`dac_sync_in`, `dac_sync_out`, `tdd_sync`, `tdd_sync_cntr`, `gps_pps`, `gps_pps_irq`) are managed to ensure proper timing and coordination in communication.
+   - The module connects GPIO signals for DAC (`up_dac_gpio_out`, `up_dac_gpio_in`) and ADC (`up_adc_gpio_out`, `up_adc_gpio_in`).
+   - ADC and DAC data channels (`adc_data_i0`, `dac_data_i0` etc.) are set as zero, showcasing the assignment of default values for data stability.
+
+4. **Clear and Concise Instruction:**
+   Create a Verilog module named `axi_ad9361_interface` that interfaces with an AD9361 radio transceiver, handling data input and output through a combination of clock, data, control, and synchronization signals.
+   - Route received clock (`rx_clk_in`) and frame signals (`rx_frame_in`) directly to the corresponding transmission outputs (`tx_clk_out` and `tx_frame_out`).
+   - Transmit data received on `rx_data_in` to `tx_data_out`.
+   - Control the enable (`enable`) and transmit/receive (`txnrx`) states based on `up_enable` and `up_txnrx` inputs.
+   - Pass synchronization signals (`dac_sync_in` to `dac_sync_out`, `tdd_sync` to `tdd_sync_cntr`, `gps_pps` to `gps_pps_irq`).
+   - Use the `delay_clk` signal for `l_clk`.
+   - Manage the reset state based on the `s_axi_aresetn` input.
+   - Set all ADC and DAC related data and enable/valid signals to zero.
+   - Implement basic read and write control for AXI transactions, ensuring handshaking ready and valid signals.
+   - Interconnect the GPIO signals directly for DAC and ADC (input to output).
+
+Generate the code ensuring correct handling and mapping of all these signals appropriately.
+
+This instruction reflects the insights from the CFG and DFG and should provide clear guidance for the generation of an appropriate Verilog module.
+
+Module Interface:
+module axi_ad9361_interface (
+  input rx_clk_in,
+  input rx_frame_in,
+  input [11:0]rx_data_in,
+  output tx_clk_out,
+  output tx_frame_out,
+  output [11:0]tx_data_out,
+  output enable,
+  output txnrx,
+  input dac_sync_in,
+  output dac_sync_out,
+  input tdd_sync,
+  output tdd_sync_cntr,
+  input gps_pps,
+  output gps_pps_irq,
+  input delay_clk,
+  output l_clk,
+  input clk,
+  output rst,
+  output adc_enable_i0,
+  output adc_valid_i0,
+  output [15:0]adc_data_i0,
+  output adc_enable_q0,
+  output adc_valid_q0,
+  output [15:0]adc_data_q0,
+  output adc_enable_i1,
+  output adc_valid_i1,
+  output [15:0]adc_data_i1,
+  output adc_enable_q1,
+  output adc_valid_q1,
+  output [15:0]adc_data_q1,
+  input adc_dovf,
+  output adc_r1_mode,
+  output dac_enable_i0,
+  output dac_valid_i0,
+  input [15:0]dac_data_i0,
+  output dac_enable_q0,
+  output dac_valid_q0,
+  input [15:0]dac_data_q0,
+  output dac_enable_i1,
+  output dac_valid_i1,
+  input [15:0]dac_data_i1,
+  output dac_enable_q1,
+  output dac_valid_q1,
+  input [15:0]dac_data_q1,
+  input dac_dunf,
+  output dac_r1_mode,
+  input s_axi_aclk,
+  input s_axi_aresetn,
+  input s_axi_awvalid,
+  input [15:0]s_axi_awaddr,
+  input [2:0]s_axi_awprot,
+  output s_axi_awready,
+  input s_axi_wvalid,
+  input [31:0]s_axi_wdata,
+  input [3:0]s_axi_wstrb,
+  output s_axi_wready,
+  output s_axi_bvalid,
+  output [1:0]s_axi_bresp,
+  input s_axi_bready,
+  input s_axi_arvalid,
+  input [15:0]s_axi_araddr,
+  input [2:0]s_axi_arprot,
+  output s_axi_arready,
+  output s_axi_rvalid,
+  output [31:0]s_axi_rdata,
+  output [1:0]s_axi_rresp,
+  input s_axi_rready,
+  input up_enable,
+  input up_txnrx,
+  input [31:0]up_dac_gpio_in,
+  output [31:0]up_dac_gpio_out,
+  input [31:0]up_adc_gpio_in,
+  output [31:0]up_adc_gpio_out
+);
+
+Behavioral Clarifications:
+- The module is purely combinational (no always blocks); all outputs are driven by continuous assign statements.
+- rst is the active-high inversion of s_axi_aresetn. AXI handshake signals are combinationally tied: s_axi_awready mirrors s_axi_awvalid, s_axi_wready mirrors s_axi_wvalid, s_axi_bvalid mirrors s_axi_bready, s_axi_arready mirrors s_axi_arvalid, and s_axi_rvalid mirrors s_axi_rready. Both s_axi_bresp and s_axi_rresp are hardwired to 2'b00; s_axi_rdata is hardwired to 32'd0.

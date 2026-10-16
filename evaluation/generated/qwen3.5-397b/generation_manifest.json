@@ -1,0 +1,73 @@
+{
+  "created_at": "2026-09-03T09:56:30.998611+00:00",
+  "model": {
+    "alias": "qwen3.5-397b",
+    "provider": "openrouter",
+    "model_id": "qwen/qwen3.5-397b-a17b-20260216"
+  },
+  "prompt_scope": "specification only; golden RTL was not sent",
+  "max_tokens": 16384,
+  "temperature": 0.0,
+  "budget_usd": 10.0,
+  "conservative_request_ceiling_usd": 0.31672212,
+  "openrouter_usage_delta_usd": 0.09999847000000273,
+  "reported_successful_request_cost_usd": 0.10444521999999999,
+  "candidates": [
+    {
+      "index": 29,
+      "task_id": "clocked_signed_magnitude_calculator",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/clocked_signed_magnitude_calculator/candidate.v",
+      "candidate_sha256": "c06afb24d7676142890f7951491299c2239e7ba3c862e354fab9910d95ef348b",
+      "reported_request_cost_usd": 0.00342342
+    },
+    {
+      "index": 119,
+      "task_id": "dma_tdsp_bus_arbiter",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/dma_tdsp_bus_arbiter/candidate.v",
+      "candidate_sha256": "22ca951f682e7e10e4e408fbbbaa9a0d6dee8af63c960255fcd44528ebe85bc8",
+      "reported_request_cost_usd": 0.0400914
+    },
+    {
+      "index": 135,
+      "task_id": "z80_dual_psg_audio_controller",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/z80_dual_psg_audio_controller/candidate.v",
+      "candidate_sha256": "a117dabb19fc86da8ec1fbb80121010e4773e1675a5dc8db43ffff7fdb5e5984",
+      "reported_request_cost_usd": 0.01881525
+    },
+    {
+      "index": 142,
+      "task_id": "configurable_system_timer_50k_a",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/configurable_system_timer_50k_a/candidate.v",
+      "candidate_sha256": "60bd2fedf10b653bd91280c53a9f1ff3acd42830d08b7bcfcb3cbc82b4790337",
+      "reported_request_cost_usd": 0.011171
+    },
+    {
+      "index": 143,
+      "task_id": "configurable_system_timer_50k_b",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/configurable_system_timer_50k_b/candidate.v",
+      "candidate_sha256": "39d07885f545e7d376c9f73f3db7a2556e57fb33d1ec42bfdde2236941ce8f2e",
+      "reported_request_cost_usd": 0.0106835
+    },
+    {
+      "index": 144,
+      "task_id": "programmable_alarm_timer_50m",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/programmable_alarm_timer_50m/candidate.v",
+      "candidate_sha256": "f76b7b7cb6f70ba89359587ed20190e0276a3f756f0629770d3399a93a698328",
+      "reported_request_cost_usd": 0.00615315
+    },
+    {
+      "index": 151,
+      "task_id": "configurable_system_timer_50m",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/configurable_system_timer_50m/candidate.v",
+      "candidate_sha256": "b9e9e4a8f2e92bdb8967b3aee120019c018c68d68a25986ebda19a491d1e7656",
+      "reported_request_cost_usd": 0.00966075
+    },
+    {
+      "index": 192,
+      "task_id": "xr16_processor_core",
+      "candidate_path": "evaluation/generated/qwen3.5-397b/xr16_processor_core/candidate.v",
+      "candidate_sha256": "6c74e4bf502dcf3b5e9aba02ed8e78784d0b83e56d930a4f6c901f60cc60f986",
+      "reported_request_cost_usd": 0.00444675
+    }
+  ]
+}

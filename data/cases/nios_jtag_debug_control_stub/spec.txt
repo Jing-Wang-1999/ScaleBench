@@ -1,0 +1,65 @@
+### Instruction for Verilog Code Generation
+
+1. **Primary Function**: Develop a Verilog module named `nios_jtag_debug_control_stub` that serves as a JTAG debug interface for an NIOS system. 
+
+2. **Key Control Flow**:
+    - The module utilizes an always block sensitive to the negation of the reset signal (`reset_n`) and the clock (`clk`) to manage various control actions based on signal state.
+    - An additional always block, sensitive to any change (`always @*`), updates key outputs (`jrst_n`, `st_ready_test_idle`, and `jdo`) depending on the state of `reset_n`, `resetlatch`, `monitor_ready`, and `monitor_error`.
+
+3. **Important Data Processing**:
+    - Concatenate two 32-bit inputs `MonDReg` and `break_readreg` to form a 38-bit signal `jdo` for JTAG output data.
+    - Use an internal 38-bit signal `sr` to control a sequence of output action signals (`take_action_break_*`, `take_action_ocimem_*`, `take_action_tracectrl`, `take_action_tracemem_*`, `take_no_action_*`), which are set based on the edge-triggered behavior of `clk` and `reset_n`.
+
+4. **Interdependencies and Signal Interactions**:
+    - Upon reset (`reset_n` de-assertion), all control action signals should be reset to 0.
+    - Action signals govern specific behaviors (breakpoints, memory control, tracing control), influenced by the internal state (`sr`), which should be defined accordingly in the complete system design.
+    - The `jrst_n` signal is derived by logically ANDing `reset_n` and the negation of `resetlatch`.
+    - The `st_ready_test_idle` signal is determined by combining `monitor_ready` and the negation of `monitor_error` to indicate readiness.
+
+---
+
+By following these guidelines, ensure the generated Verilog code initializes all outputs correctly and manages control signals appropriately based on the provided conditions and state transitions.
+
+Module Interface:
+module nios_jtag_debug_control_stub (
+    MonDReg,
+    break_readreg,
+    clk,
+    dbrk_hit0_latch,
+    dbrk_hit1_latch,
+    dbrk_hit2_latch,
+    dbrk_hit3_latch,
+    debugack,
+    monitor_error,
+    monitor_ready,
+    reset_n,
+    resetlatch,
+    tracemem_on,
+    tracemem_trcdata,
+    tracemem_tw,
+    trc_im_addr,
+    trc_on,
+    trc_wrap,
+    trigbrktype,
+    trigger_state_1,
+    
+    jdo,
+    jrst_n,
+    st_ready_test_idle,
+    take_action_break_a,
+    take_action_break_b,
+    take_action_break_c,
+    take_action_ocimem_a,
+    take_action_ocimem_b,
+    take_action_tracectrl,
+    take_action_tracemem_a,
+    take_action_tracemem_b,
+    take_no_action_break_a,
+    take_no_action_break_b,
+    take_no_action_break_c,
+    take_no_action_ocimem_a,
+    take_no_action_tracemem_a
+);
+
+Reference Caveat:
+- `jdo` is 38 bits but is assigned `{MonDReg, break_readreg}`, a 64-bit concatenation; only the low 38 bits survive. The separate 38-bit `sr` signal is undriven, which makes later action decoding unconstrained after reset. This placeholder is quarantined from model comparison.

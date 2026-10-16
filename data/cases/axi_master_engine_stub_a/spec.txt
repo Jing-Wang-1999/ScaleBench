@@ -1,0 +1,73 @@
+The primary function of the custom_m_axi_s Verilog module is to implement a custom AXI master interface that handles read and write transactions, transferring data between memory and external AXI-compliant peripherals. It incorporates three sub-modules: mread_master for read operations, step_to_pulse for generating pulse signals from step inputs, and swr_engine for write operations.
+
+**Key Control Flow and Decision Points:**
+- The module starts operations based on the rise of `rd_start` and `wr_start`, which are converted to pulses.
+- Read and write processes are controlled primarily by the `m_axi_*ready` signals from external AXI slave interfaces, coordinating when new commands or data can be sent.
+- Control signals such as `m_axi_arvalid`, `m_axi_awvalid`, `m_axi_wvalid`, `mread_master`’s internal state machines, and a `swr_engine` manage the validity and readiness of addresses and data in the AXI protocol.
+
+**Important Data Processing and Signal Interactions:**
+- The `mread_master` module handles the read transaction initiation by setting the read address (`m_axi_araddr` and other relevant signals) and then captures the read data from the AXI bus (`m_axi_rdata`).
+- During read operations, results are placed onto the AXI stream (`m_axis_rd_tdata`, `m_axis_rd_tvalid`), and read completion is indicated by `rd_done`.
+- The `swr_engine` module initiates write transactions by specifying the write address (`m_axi_awaddr` and related signals) and transmits write data (`m_axi_wdata`).
+- Write data is validated and accepted based on `m_axi_wready` and the write operation is considered complete when `wr_done` is asserted.
+- Control and handshaking signals ensure robust data exchange and sequencing, enabling efficient read and write operations via the AXI protocol.
+
+This explanation should guide an LLM in generating the corresponding Verilog code accurately, emphasizing the module's primary function, control flow, and data interactions.
+
+Module Interface:
+module axi_master_engine_stub_a
+   (input clk,
+    output [63:0] m_axi_araddr,
+    output [1:0] m_axi_arburst,
+    output [3:0] m_axi_arcache,
+    output [5:0] m_axi_arid,
+    output [7:0] m_axi_arlen,
+    output [1:0] m_axi_arlock,
+    output [3:0] m_axi_arqos,
+    input m_axi_arready,
+    output [3:0] m_axi_arregion,
+    output [2:0] m_axi_arsize,
+    output m_axi_arvalid,
+    output [63:0] m_axi_awaddr,
+    output [5:0] m_axi_awid,
+    output [7:0] m_axi_awlen,
+    input m_axi_awready,
+    output [2:0] m_axi_awsize,
+    output m_axi_awvalid,
+    output m_axi_bready,
+    input [1:0] m_axi_bresp,
+    input m_axi_bvalid,
+    input [63:0] m_axi_rdata,
+    input [5:0] m_axi_rid,
+    input m_axi_rlast,
+    output m_axi_rready,
+    input [1:0] m_axi_rresp,
+    input m_axi_rvalid,
+    output [63:0] m_axi_wdata,
+    output m_axi_wlast,
+    input m_axi_wready,
+    output [7:0] m_axi_wstrb,
+    output m_axi_wvalid,
+    output [63:0] m_axis_rd_tdata,
+    output [7:0] m_axis_rd_tkeep,
+    output m_axis_rd_tlast,
+    input m_axis_rd_tready,
+    output [7:0] m_axis_rd_tstrb,
+    output m_axis_rd_tvalid,
+    input [63:0] rd_baseAddr,
+    output rd_done,
+    input [31:0] rd_req_din,
+    output rd_req_full_n,
+    input rd_req_wr_en,
+    input rd_start,
+    input rst_n,
+    input [63:0] s_axis_wr_tdata,
+    output s_axis_wr_tready,
+    input s_axis_wr_tvalid,
+    input [63:0] wr_baseAddr,
+    output wr_done,
+    input [7:0] wr_len,
+    input wr_start);
+
+Reference Caveat:
+- The top-level wrapper instantiates read, pulse, and write engines, but those helper modules have empty bodies. Most AXI and stream behavior is therefore unconstrained. This case is quarantined from model comparison and retained only for provenance review.

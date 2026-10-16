@@ -1,0 +1,37 @@
+{
+  "authorized_limit_usd": 20.0,
+  "models": {
+    "gpt-4o": {
+      "status": "completed",
+      "provider": "azure",
+      "model_id": "gpt-4o",
+      "successful_request_cost_usd": 0.07496499999999999,
+      "conservative_request_ceiling_usd": 1.37491
+    },
+    "claude-sonnet-4.5": {
+      "status": "not_run"
+    },
+    "qwen3.5-397b": {
+      "status": "completed",
+      "provider": "openrouter",
+      "model_id": "qwen/qwen3.5-397b-a17b-20260216",
+      "successful_request_cost_usd": 0.10444521999999999,
+      "conservative_request_ceiling_usd": 0.31672212
+    },
+    "deepseek-v3.2": {
+      "status": "completed",
+      "provider": "openrouter",
+      "model_id": "deepseek/deepseek-v3.2",
+      "successful_request_cost_usd": 0.007960659000000002,
+      "conservative_request_ceiling_usd": 0.666852
+    }
+  },
+  "accounted_successful_request_total_usd": 0.187370879,
+  "untracked_initial_qwen_attempt_maximum_usd": 0.03955029,
+  "failed_jiekou_claude_attempt_count": 4,
+  "failed_jiekou_claude_attempts_maximum_usd": 1.70054,
+  "maximum_total_including_untracked_attempt_usd": 1.9274611689999999,
+  "conservative_completed_request_ceiling_including_untracked_attempt_usd": 4.09857441,
+  "within_authorized_limit": true,
+  "note": "The initial Qwen response contained no Verilog and predated per-response accounting. Four Claude requests to Jiekou reset without responses; a later health check returned NOT_ENOUGH_BALANCE, so inference charges are unlikely, but all four are conservatively bounded as full 16384-token outputs. OpenRouter entries use reported request costs; other providers use token counts at the audited public list price. The conservative ceiling assumes every completed request could have consumed its full configured output limit."
+}

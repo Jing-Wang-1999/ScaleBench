@@ -1,0 +1,43 @@
+The Verilog module `ps2_wishbone_controller` interfaces a Wishbone bus with a PS2 device, handling data transmission and control signals. The primary function of the module is to facilitate communication between a PS2 device and a host system via the Wishbone bus, manage data buffering, and generate interrupt requests based on data availability and errors.
+
+1. **Primary Function:**
+   - This module serves as an interface between the Wishbone bus and a PS2 device, managing data transactions, buffering, and generating interrupts when certain conditions are met.
+
+2. **Key Control Flow:**
+   - On each clock cycle (`wb_clk_i`), the module checks for a reset signal (`wb_rst_i`). If reset is active, it clears internal buffers and flags.
+   - When `wb_stb_i` (strobe) and `wb_we_i` (write enable) are asserted, the module processes data inputs. If the address input (`wb_adr_i[0]`) indicates a write to the PS2 data buffer, it updates the buffer and sets the input buffer full flag (`ps2_ibf`).
+   - Control register fields are updated based on `wb_stb_i` and `wb_we_i` signals, allowing enablement of receive and transmit interrupts.
+
+3. **Important Data Processing:**
+   - The module maintains internal buffers (`ps2_data_buf`, `ps2_ibf`, `ps2_obf`) to store incoming and outgoing PS2 data.
+   - Error flags (`ps2_frame_err`, `ps2_parity_err`) are set and cleared based on specific conditions.
+   - The busy signal (`ps2_busy`) determines the state of the PS2 clock and data lines, where active busy indicates ongoing data transmission.
+
+4. **Signal Interactions:**
+   - The PS2 clock line (`ps2_clk`) is controlled by the module based on the busy flag, where it is tri-stated during transmission.
+   - The PS2 data line (`ps2_dat`) is similarly managed, transmitting data only when busy.
+   - Interrupt request (`irq_o`) is generated when either the input buffer is full (enabled by `irq_rx_enb`) or the output buffer is empty (enabled by `irq_tx_enb`).
+   - The Wishbone data output (`wb_dat_o`) provides either status information or PS2 data based on the address input.
+
+The module ensures that data transactions are carried out smoothly between the PS2 device and the host system, with proper handling of errors and status flags to maintain integrity and offer interrupt-driven notifications for efficient data processing.
+
+Module Interface:
+module ps2_wishbone_controller(
+    input wire       wb_clk_i,
+    input wire       wb_rst_i,
+    input wire [7:0] wb_dat_i,
+    output wire [7:0] wb_dat_o,
+    input wire [0:0] wb_adr_i,
+    input wire       wb_stb_i,
+    input wire       wb_we_i,
+    output wire      wb_ack_o,
+
+    output wire      irq_o,
+
+    inout wire       ps2_clk,
+    inout wire       ps2_dat
+);
+
+Behavioral Clarifications:
+- There are two sequential always blocks, both on posedge wb_clk_i with synchronous reset. All internal state registers (ps2_data_buf, ps2_ibf, ps2_obf, ps2_frame_err, ps2_parity_err, ps2_busy, ps2_wdt) initialize to 0 on reset.
+- wb_ack_o is always equal to wb_stb_i (immediate acknowledge). irq_rx_enb and irq_tx_enb come from control_reg bits [6] and [7] respectively; the control register only captures bits [7:6] from writedata when a write targets address 1.

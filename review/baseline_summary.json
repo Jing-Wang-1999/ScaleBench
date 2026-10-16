@@ -1,0 +1,21 @@
+{
+  "scope": "two complete direct-generation runs with SEC outcomes",
+  "models": {
+    "gpt-4o": {
+      "verified": 200,
+      "passed": 29,
+      "failed": 171,
+      "pass_rate": 0.145
+    },
+    "claude-sonnet-4.5": {
+      "verified": 200,
+      "passed": 41,
+      "failed": 159,
+      "pass_rate": 0.205
+    }
+  },
+  "both_baselines_failed": 142,
+  "audited_failure_cohort": 20,
+  "repair_evaluation_cohort": 8,
+  "note": "No complete per-case DeepSeek ScaleBench result was found, so it is not used to define the per-case intersection."
+}

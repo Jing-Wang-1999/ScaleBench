@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Browse and manually review all 200 semantically named ScaleBench RTL design cases."
+    />
+    <title>ScaleBench Explorer</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <script src="./assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#case-detail">Skip to selected case</a>
+
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="ScaleBench Explorer home">
+        <span class="brand-mark" aria-hidden="true">SB</span>
+        <span>
+          <strong>ScaleBench</strong>
+          <small>Benchmark explorer</small>
+        </span>
+      </a>
+      <nav aria-label="Project links">
+        <a href="#browser">Browse cases</a>
+        <a href="./review/ALL_CASE_AUDIT.md">Audit</a>
+        <a href="https://github.com/Jing-Wang-1999/scalebench">Repository</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Specification-to-RTL benchmark</p>
+          <h1 id="page-title">Inspect every design.<br />One case at a time.</h1>
+          <p class="hero-summary">
+            A compact viewer for the curated ScaleBench release. Search semantic
+            design names, inspect prompts and reference RTL, and track your manual
+            review locally in the browser.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#browser">Start reviewing</a>
+            <a class="button button-secondary" href="./data/manifest.json">Download manifest</a>
+          </div>
+        </div>
+
+        <div class="stat-grid" aria-label="Dataset summary">
+          <article class="stat-card stat-card-primary">
+            <span class="stat-label">Design cases</span>
+            <strong id="stat-total">—</strong>
+            <small>semantic task names</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Sequential</span>
+            <strong id="stat-sequential">—</strong>
+            <small>clocked designs</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Combinational</span>
+            <strong id="stat-combinational">—</strong>
+            <small>stateless designs</small>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Reviewed locally</span>
+            <strong id="stat-reviewed">0</strong>
+            <small>saved in this browser</small>
+          </article>
+        </div>
+      </section>
+
+      <section class="browser-shell" id="browser" aria-labelledby="browser-title">
+        <aside class="case-browser" aria-label="Case browser">
+          <div class="browser-heading">
+            <div>
+              <p class="eyebrow">Dataset index</p>
+              <h2 id="browser-title">All cases</h2>
+            </div>
+            <span class="result-count" id="result-count">Loading…</span>
+          </div>
+
+          <div class="controls">
+            <label class="search-field">
+              <span>Search semantic names</span>
+              <input
+                id="search-input"
+                type="search"
+                placeholder="e.g. timer, AXI, CRC…"
+                autocomplete="off"
+              />
+            </label>
+
+            <div class="filter-grid">
+              <label>
+                <span>Design type</span>
+                <select id="type-filter">
+                  <option value="all">All types</option>
+                  <option value="sequential">Sequential</option>
+                  <option value="combinational">Combinational</option>
+                </select>
+              </label>
+              <label>
+                <span>Curation</span>
+                <select id="curation-filter">
+                  <option value="all">All cases</option>
+                  <option value="ready">Review ready</option>
+                  <option value="repaired">Prompt repaired</option>
+                  <option value="attention">Needs attention</option>
+                </select>
+              </label>
+              <label>
+                <span>Manual review</span>
+                <select id="review-filter">
+                  <option value="all">Any progress</option>
+                  <option value="unreviewed">Not reviewed</option>
+                  <option value="reviewed">Reviewed</option>
+                </select>
+              </label>
+              <label>
+                <span>Sort by</span>
+                <select id="sort-select">
+                  <option value="index">Case number</option>
+                  <option value="name">Design name</option>
+                  <option value="loc-desc">Largest first</option>
+                  <option value="loc-asc">Smallest first</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="case-list" id="case-list" role="listbox" aria-label="ScaleBench cases"></div>
+        </aside>
+
+        <article class="case-detail" id="case-detail" tabindex="-1" aria-live="polite">
+          <div class="empty-state">
+            <span class="empty-glyph" aria-hidden="true">⌁</span>
+            <h2>Loading ScaleBench…</h2>
+            <p>The first semantically named design will appear here.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <p>ScaleBench · 200 curated specification-to-RTL cases</p>
+      <p>Manual review progress stays in your browser and is never uploaded.</p>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

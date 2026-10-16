@@ -1,0 +1,98 @@
+The Verilog module `microblaze_system_wrapper` represents a MicroBlaze processor system interface, handling instruction and data memory access, interrupt management, and debug functionality. Below is a detailed explanation of its purpose and operations:
+
+### Primary Function:
+The module coordinates interactions between the MicroBlaze processor core and external memory and peripheral interfaces, including AXI memory-mapped interfaces, managing instruction fetch, data read/write, interrupt handling, and providing debug capabilities.
+
+### Key Control Flow:
+1. **Clock and Reset Handling:**
+   - `Clk` and `Reset` inputs synchronize and initialize the system's sequential elements, like registers and FSMs.
+   - `Dbg_Clk` and `Debug_Rst` specifically control the debug interface operations.
+
+2. **Interrupt Management:**
+   - `Interrupt` and `Interrupt_Address` inputs manage the interrupt handling mechanism.
+   - `Interrupt_Ack` outputs acknowledge interrupts.
+
+3. **Instruction Fetch:**
+   - `Instr_Addr` is generated for instruction fetching.
+   - Inputs `IReady`, `IWAIT`, `ICE`, and `IUE` influence the instruction fetching process.
+   - `IFetch` and `I_AS` outputs control the memory access strobe for instruction fetching.
+
+4. **Data Access:**
+   - `Data_Addr`, `Data_Read`, and `Data_Write` signals handle data transactions.
+   - Controls `DReady`, `DWait`, `DCE`, and `DUE` manage the data transfer readiness and errors.
+   - `D_AS`, `Read_Strobe`, `Write_Strobe`, and `Byte_Enable` outputs control the data access strobe and byte-level enablement.
+
+5. **AXI Interface:**
+   - AXI write address, data, and response channels are handled via `M_AXI_DP_AWADDR`, `M_AXI_DP_AWPROT`, `M_AXI_DP_AWVALID`, `M_AXI_DP_AWREADY`, `M_AXI_DP_WDATA`, `M_AXI_DP_WSTRB`, `M_AXI_DP_WVALID`, `M_AXI_DP_WREADY`, `M_AXI_DP_BRESP`, `M_AXI_DP_BVALID`, and `M_AXI_DP_BREADY`.
+   - AXI read address, data, and response channels are managed via `M_AXI_DP_ARADDR`, `M_AXI_DP_ARPROT`, `M_AXI_DP_ARVALID`, `M_AXI_DP_ARREADY`, `M_AXI_DP_RDATA`, `M_AXI_DP_RRESP`, `M_AXI_DP_RVALID`, and `M_AXI_DP_RREADY`.
+
+6. **Debug Interface:**
+   - Debug signals `Dbg_TDI`, `Dbg_TDO`, `Dbg_Reg_En`, `Dbg_Shift`, `Dbg_Capture`, `Dbg_Update`, and `Dbg_Disable` facilitate monitoring and controlling the MicroBlaze core.
+
+### Important Data Processing and Signal Interactions:
+- *Instruction Fetching*: `Instr_Addr` is generated based on the program counter and is used to fetch `Instr` from memory. Signals like `IFetch`, `I_AS`, `IReady`, `IWAIT`, `ICE`, and `IUE` manage and monitor this process.
+- *Data Handling*: `Data_Addr`, `Data_Read`, and `Data_Write` are crucial for read and write operations. Control signals like `DReady`, `DWait`, `DCE`, and `DUE` determine the readiness and error status of data operations.
+- *AXI Bus Communication*: Various signals, including `M_AXI_DP_AWADDR`, `M_AXI_DP_WDATA`, `M_AXI_DP_ARADDR`, and their associated control signals, orchestrate the communication with the memory through the AXI interface.
+- *Debug Control*: The debug signals, including `Dbg_Reg_En`, `Dbg_Shift`, `Dbg_Capture`, `Dbg_Update`, and `Debug_Rst`, provide mechanisms for processor state inspection and internal register control.
+
+By understanding these components and their interactions, the LLM should be able to recreate a Verilog module that matches these architectural and operational details.
+
+Module Interface:
+module microblaze_system_wrapper(
+  Clk,
+  Reset,
+  Interrupt,
+  Interrupt_Address,
+  Interrupt_Ack,
+  Instr_Addr,
+  Instr,
+  IFetch,
+  I_AS,
+  IReady,
+  IWAIT,
+  ICE,
+  IUE,
+  Data_Addr,
+  Data_Read,
+  Data_Write,
+  D_AS,
+  Read_Strobe,
+  Write_Strobe,
+  DReady,
+  DWait,
+  DCE,
+  DUE,
+  Byte_Enable,
+  M_AXI_DP_AWADDR,
+  M_AXI_DP_AWPROT,
+  M_AXI_DP_AWVALID,
+  M_AXI_DP_AWREADY,
+  M_AXI_DP_WDATA,
+  M_AXI_DP_WSTRB,
+  M_AXI_DP_WVALID,
+  M_AXI_DP_WREADY,
+  M_AXI_DP_BRESP,
+  M_AXI_DP_BVALID,
+  M_AXI_DP_BREADY,
+  M_AXI_DP_ARADDR,
+  M_AXI_DP_ARPROT,
+  M_AXI_DP_ARVALID,
+  M_AXI_DP_ARREADY,
+  M_AXI_DP_RDATA,
+  M_AXI_DP_RRESP,
+  M_AXI_DP_RVALID,
+  M_AXI_DP_RREADY,
+  Dbg_Clk,
+  Dbg_TDI,
+  Dbg_TDO,
+  Dbg_Reg_En,
+  Dbg_Shift,
+  Dbg_Capture,
+  Dbg_Update,
+  Debug_Rst,
+  Dbg_Disable
+  );
+
+Behavioral Clarifications:
+- The golden RTL is a stub with port declarations only and no internal logic; all output ports are undriven.
+- Interrupt_Ack is 2 bits; Instr_Addr, Data_Addr, Data_Write, M_AXI_DP_AWADDR, M_AXI_DP_WDATA, M_AXI_DP_ARADDR are 32 bits; Byte_Enable is 4 bits; M_AXI_DP_AWPROT and M_AXI_DP_ARPROT are 3 bits; M_AXI_DP_WSTRB is 4 bits; Dbg_Reg_En is 8 bits.

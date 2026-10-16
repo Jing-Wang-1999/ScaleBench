@@ -1,0 +1,55 @@
+The Verilog module implements a 256-point Fast Fourier Transform (FFT) algorithm with key operations spanning across state transitions and data processing stages. Here's how the module operates:
+
+1. **Primary Function**:
+   The module performs a 256-point FFT on the complex input data streams `xr_in` (real part) and `xi_in` (imaginary part). It outputs the FFT result through `fftr` and `ffti`, and provides controls and status indications via multiple output signals.
+
+2. **Key Control Flow**:
+   - **State Transitions**:
+     - **Start (start)**: Initializes key control signals and transitions to the data loading phase.
+     - **Load Data (load)**: Sequentially loads the input data stream into internal buffers `xr` and `xi`. Moves to the calculation phase once all data is loaded.
+     - **Calculation (calc)**: Computes intermediate FFT results using butterfly operations on input data pairs, applying sine and cosine transformations.
+     - **Update Indices (update)**: Updates indices and control parameters for the next stage of calculations. Checks for completion of a stage and progresses through the FFT stages.
+     - **Bit-Reversal (reverse)**: Reorders the results based on bit-reversed addressing and outputs the final results.
+     - **Completion (done)**: Indicates the end of the FFT computation cycle and returns to the start state.
+
+3. **Important Data Processing and Interactions**:
+   - **Butterfly Operations**:
+     - In the `calc` state, perform butterfly operations with the data pairs indexed by `i1` and `i2`. Intermediate values `tr` and `ti` are computed as the differences of respective data pairs.
+     - Multiply these differences by pre-stored sine (`sin_rom`) and cosine (`cos_rom`) values indexed by `w`. Adjust the results through bit-shifting for alignment and store back the computed values.
+   - **Updating Control Parameters**:
+     - Adjust indices and multipliers (`i1`, `i2`, `k1`, `k2`, `w`, `dw`) in the `update` state to traverse through different stages and ensure correct multiplier application.
+   - **Bit-Reversal for Output**:
+     - In the `reverse` state, reorder the computed results from internal storage to outside via bit-reversal of the count register `rcount`.
+
+The module thus implements the FFT through a series of controlled state transitions and data transformations, ensuring that the input data is appropriately transformed and outputs are staunchly ready in bit-reversed final form.
+
+Module Interface:
+module fft256_processor
+ (
+    input clk,
+    input reset,
+    input signed [15:0] xr_in,
+    input signed [15:0] xi_in,
+    output reg fft_valid,
+    output reg signed [15:0] fftr,
+    output reg signed [15:0] ffti,
+    output [8:0] rcount_o,
+    output [15:0] xr_out0,
+    output [15:0] xi_out0,
+    output [15:0] xr_out1,
+    output [15:0] xi_out1,
+    output [15:0] xr_out255,
+    output [15:0] xi_out255,
+    output [8:0] stage_o,
+    output [8:0] gcount_o,
+    output [8:0] i1_o,
+    output [8:0] i2_o,
+    output [8:0] k1_o,
+    output [8:0] k2_o,
+    output [8:0] w_o,
+    output [8:0] dw_o,
+    output reg [8:0] wo
+ );
+
+Behavioral Clarifications:
+- The FSM uses a 3-bit state register with 6 named states: start=0, load=1, calc=2, update=3, reverse=4, done=5. The cos/sin ROM lookup (128 entries each, 16-bit) is registered on the negedge of clk. On reset, stage initializes to 1, i2 to N/2=128, k1 to N=256, k2 to N/2=128, dw to 1. Butterfly twiddle factors are right-shifted by 14 bits after multiplication.

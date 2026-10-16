@@ -1,0 +1,73 @@
+{
+  "created_at": "2026-09-03T10:02:41.749684+00:00",
+  "model": {
+    "alias": "deepseek-v3.2",
+    "provider": "openrouter",
+    "model_id": "deepseek/deepseek-v3.2"
+  },
+  "prompt_scope": "specification only; golden RTL was not sent",
+  "max_tokens": 16384,
+  "temperature": 0.0,
+  "budget_usd": 10.0,
+  "conservative_request_ceiling_usd": 0.666852,
+  "openrouter_usage_delta_usd": 0.00672042399997963,
+  "reported_successful_request_cost_usd": 0.007960659000000002,
+  "candidates": [
+    {
+      "index": 29,
+      "task_id": "clocked_signed_magnitude_calculator",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/clocked_signed_magnitude_calculator/candidate.v",
+      "candidate_sha256": "f3c04528a07bbfa834354935dc5df1ebbba751e17db75bf7ad7b60d93f113771",
+      "reported_request_cost_usd": 0.001188564
+    },
+    {
+      "index": 119,
+      "task_id": "dma_tdsp_bus_arbiter",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/dma_tdsp_bus_arbiter/candidate.v",
+      "candidate_sha256": "21c0999dcf789b4f4d7268385fa64cad686b145cd8649f8428bed5110efad53d",
+      "reported_request_cost_usd": 0.0005219
+    },
+    {
+      "index": 135,
+      "task_id": "z80_dual_psg_audio_controller",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/z80_dual_psg_audio_controller/candidate.v",
+      "candidate_sha256": "898787dcf8c6a6995fb8b8f028eaa25393777d3c1246d38023f89dd1a7cd1ce6",
+      "reported_request_cost_usd": 0.00221758
+    },
+    {
+      "index": 142,
+      "task_id": "configurable_system_timer_50k_a",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/configurable_system_timer_50k_a/candidate.v",
+      "candidate_sha256": "e6e72da51205bccf6216e3fd844bffa6ac822dcb5b450f236e8a6574f61a02fe",
+      "reported_request_cost_usd": 0.000701
+    },
+    {
+      "index": 143,
+      "task_id": "configurable_system_timer_50k_b",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/configurable_system_timer_50k_b/candidate.v",
+      "candidate_sha256": "ed6a00a19fe32b7792158fc988ef969531316b7c88a951c6e0bf162692533ed3",
+      "reported_request_cost_usd": 0.00090168
+    },
+    {
+      "index": 144,
+      "task_id": "programmable_alarm_timer_50m",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/programmable_alarm_timer_50m/candidate.v",
+      "candidate_sha256": "8bc29161a82e5e6c266e9872ae38c728e074fa103236de9955bb137cd9935c35",
+      "reported_request_cost_usd": 0.0011897
+    },
+    {
+      "index": 151,
+      "task_id": "configurable_system_timer_50m",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/configurable_system_timer_50m/candidate.v",
+      "candidate_sha256": "6025f5210a9ba47e163d81e4d5777d82f43a9bda8a7272c6c90dcab4b6d7c297",
+      "reported_request_cost_usd": 0.00079622
+    },
+    {
+      "index": 192,
+      "task_id": "xr16_processor_core",
+      "candidate_path": "evaluation/generated/deepseek-v3.2/xr16_processor_core/candidate.v",
+      "candidate_sha256": "70b611be8d64eccf51ad2594960a274b85d10ccc7a015ad960e7622b582d3c2b",
+      "reported_request_cost_usd": 0.000444015
+    }
+  ]
+}
