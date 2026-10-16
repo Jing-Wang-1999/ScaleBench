@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the dependency-free ScaleBench profile and case browser."""
+"""Build the dependency-free ScaleBench case browser."""
 
 from __future__ import annotations
 

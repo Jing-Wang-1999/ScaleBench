@@ -39,48 +39,11 @@ function hashFor(values) {
 }
 
 function breadcrumbs(parts) {
-  const entries = ['<a href="./review.html">Case browser</a>'];
+  const entries = ['<a href="./index.html">All cases</a>'];
   parts.forEach((part) => {
     entries.push(`<span aria-hidden="true">/</span><span>${part}</span>`);
   });
   return `<nav class="browser-crumbs" aria-label="Breadcrumb">${entries.join("")}</nav>`;
-}
-
-function renderDashboard() {
-  const sequential = state.cases.filter((record) => record.is_sequential).length;
-  const locations = state.cases.map((record) => record.loc);
-  content.innerHTML = `
-    ${breadcrumbs([])}
-    <div class="browser-title-row">
-      <div>
-        <h1>ScaleBench case browser</h1>
-        <p>Open the benchmark task to inspect every specification, reference implementation, and verification script.</p>
-      </div>
-      <a class="button button-secondary button-small" href="#guide">Evaluation guide</a>
-    </div>
-    <section class="dashboard-grid" aria-label="Case browser summary">
-      <article class="dashboard-stat"><strong>${state.cases.length}</strong><span>Total cases</span></article>
-      <article class="dashboard-stat"><strong>${sequential}</strong><span>Sequential</span></article>
-      <article class="dashboard-stat"><strong>${state.cases.length - sequential}</strong><span>Combinational</span></article>
-      <article class="dashboard-stat"><strong>${Math.min(...locations)}–${Math.max(...locations)}</strong><span>Reference LoC</span></article>
-    </section>
-    <section aria-labelledby="task-list-title">
-      <div class="browser-title-row">
-        <div>
-          <h2 id="task-list-title">Benchmark task</h2>
-          <p>ScaleBench contains one direct, module-level generation task.</p>
-        </div>
-      </div>
-      <article class="browser-card task-card">
-        <span class="task-number" aria-hidden="true">01</span>
-        <div>
-          <h2>Specification-to-RTL generation</h2>
-          <p>Natural-language specification → complete Verilog module → JasperGold SEC · 200 cases</p>
-        </div>
-        <a class="button button-primary button-small" href="#task=${TASK_KEY}">Browse 200 cases →</a>
-      </article>
-    </section>
-  `;
 }
 
 function filteredCases(route) {
@@ -130,17 +93,15 @@ function renderCaseList(route) {
     .join("");
 
   content.innerHTML = `
-    ${breadcrumbs(["Specification-to-RTL"])}
     <div class="browser-title-row">
       <div>
         <h1>Specification-to-RTL generation</h1>
-        <p>All 200 cases use semantic design names. Select a row to inspect its complete case package.</p>
       </div>
       <span class="pill">${matches.length} of ${state.cases.length} cases</span>
     </div>
     <form class="filter-bar filter-bar-compact" id="case-filters">
       <label class="field">
-        <span>Search semantic design names</span>
+        <span>Search cases</span>
         <input name="q" type="search" value="${escapeHtml(query)}" placeholder="e.g. timer, packet, counter" autocomplete="off" />
       </label>
       <label class="field">
@@ -160,7 +121,7 @@ function renderCaseList(route) {
         <thead>
           <tr>
             <th scope="col">Case</th>
-            <th scope="col">Semantic design name</th>
+            <th scope="col">Design</th>
             <th scope="col">Type</th>
             <th scope="col">Reference LoC</th>
           </tr>
@@ -374,38 +335,6 @@ async function renderFile(record, fileKey) {
   }
 }
 
-function renderGuide() {
-  content.innerHTML = `
-    ${breadcrumbs(["Evaluation guide"])}
-    <div class="browser-title-row">
-      <div>
-        <h1>Evaluation guide</h1>
-        <p>Use the case browser to understand the task package while keeping model input separate from verifier assets.</p>
-      </div>
-      <a class="button button-primary button-small" href="#task=${TASK_KEY}">Browse cases →</a>
-    </div>
-    <div class="guide-grid">
-      <section class="browser-card">
-        <h2>Case package</h2>
-        <ol>
-          <li><code>spec.txt</code> defines the required behavior, top module, and interface.</li>
-          <li><code>reference.v</code> is the golden implementation used only for scoring.</li>
-          <li><code>sec.tcl</code> configures JasperGold sequential equivalence checking.</li>
-        </ol>
-      </section>
-      <section class="browser-card">
-        <h2>Evaluation boundary</h2>
-        <ul>
-          <li><strong>Give the model:</strong> only <code>spec.txt</code>.</li>
-          <li><strong>Collect:</strong> one complete Verilog implementation with the named top module.</li>
-          <li><strong>Keep hidden:</strong> <code>reference.v</code> and <code>sec.tcl</code>.</li>
-          <li><strong>Score:</strong> pass only when JasperGold SEC proves equivalence.</li>
-        </ul>
-      </section>
-    </div>
-  `;
-}
-
 function renderNotFound(message) {
   content.innerHTML = `
     <div class="error-state">
@@ -418,9 +347,7 @@ function renderNotFound(message) {
 
 function renderRoute() {
   const route = currentRoute();
-  if (route.has("guide")) {
-    renderGuide();
-  } else if (route.get("case")) {
+  if (route.get("case")) {
     const record = state.caseById.get(route.get("case"));
     if (!record) {
       renderNotFound("The requested semantic design name is not in ScaleBench.");
@@ -429,10 +356,8 @@ function renderRoute() {
     } else {
       renderCase(record);
     }
-  } else if (route.get("task")) {
-    renderCaseList(route);
   } else {
-    renderDashboard();
+    renderCaseList(route);
   }
   window.scrollTo({ top: 0, behavior: "auto" });
 }

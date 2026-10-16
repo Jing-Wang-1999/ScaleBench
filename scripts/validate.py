@@ -212,7 +212,7 @@ def main() -> int:
     )
     for path in viewer_files:
         if not path.is_file():
-            fail(f"missing profile file {path.relative_to(ROOT)}", failures)
+            fail(f"missing browser file {path.relative_to(ROOT)}", failures)
 
     sequential = sum(bool(record.get("is_sequential")) for record in records)
     print(

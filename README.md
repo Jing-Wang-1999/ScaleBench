@@ -37,14 +37,14 @@ For evaluation, give the model only `spec.txt` and ask it to produce one complet
 
 ## Case browser
 
-The dependency-free website provides a compact benchmark profile and a browser for all 200 cases:
+The dependency-free website opens directly to the browser for all 200 cases:
 
 ```bash
 python3 scripts/build_viewer.py --output _site
 python3 -m http.server 8000 --directory _site
 ```
 
-Open `http://127.0.0.1:8000/` for the profile or `http://127.0.0.1:8000/review.html#task=spec2rtl` for the case browser. GitHub Actions publishes the same build at [jing-wang-1999.github.io/ScaleBench](https://jing-wang-1999.github.io/ScaleBench/).
+Open `http://127.0.0.1:8000/`. GitHub Actions publishes the same case browser at [jing-wang-1999.github.io/ScaleBench](https://jing-wang-1999.github.io/ScaleBench/).
 
 ## Validation
 
