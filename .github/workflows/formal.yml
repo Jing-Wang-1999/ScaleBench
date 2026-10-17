@@ -1,0 +1,64 @@
+name: Open-source formal smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "scripts/stage_jasper.py"
+      - "scripts/verify_yosys.py"
+      - ".github/workflows/formal.yml"
+  pull_request:
+    paths:
+      - "data/**"
+      - "scripts/stage_jasper.py"
+      - "scripts/verify_yosys.py"
+      - ".github/workflows/formal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  yosys-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Install Yosys
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-name: formal
+          create-args: yosys=0.65
+
+      - name: Check combinational refinement
+        shell: bash -el {0}
+        run: |
+          python3 scripts/verify_yosys.py \
+            --case processor_memory_control_unit \
+            --candidate data/cases/processor_memory_control_unit/reference.v \
+            --output /tmp/scalebench-combinational
+
+      - name: Check reset-initialized sequential equivalence
+        shell: bash -el {0}
+        run: |
+          python3 scripts/verify_yosys.py \
+            --case signed_vector_max_relu \
+            --candidate data/cases/signed_vector_max_relu/reference.v \
+            --output /tmp/scalebench-reset
+
+      - name: Check named-state sequential equivalence
+        shell: bash -el {0}
+        run: |
+          python3 scripts/verify_yosys.py \
+            --case write_once_register \
+            --candidate data/cases/write_once_register/reference.v \
+            --output /tmp/scalebench-state
+
+      - name: Check JasperGold staging
+        run: |
+          python3 scripts/stage_jasper.py \
+            --case processor_memory_control_unit \
+            --candidate data/cases/processor_memory_control_unit/reference.v \
+            --output /tmp/scalebench-jasper

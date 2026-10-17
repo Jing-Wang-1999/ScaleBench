@@ -208,6 +208,8 @@ def main() -> int:
         ROOT / "viewer" / "assets" / "styles.css",
         ROOT / "viewer" / "assets" / "app.js",
         ROOT / "scripts" / "build_viewer.py",
+        ROOT / "scripts" / "stage_jasper.py",
+        ROOT / "scripts" / "verify_yosys.py",
         ROOT / ".github" / "workflows" / "pages.yml",
     )
     for path in viewer_files:

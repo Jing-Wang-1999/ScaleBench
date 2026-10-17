@@ -216,7 +216,7 @@ function renderCase(record) {
             <tr><th scope="row">Model input</th><td><code class="inline-code">spec.txt</code></td></tr>
             <tr><th scope="row">Required output</th><td>One complete synthesizable Verilog module</td></tr>
             <tr><th scope="row">Top module</th><td><code class="inline-code">${escapeHtml(record.top_module)}</code></td></tr>
-            <tr><th scope="row">Verification</th><td>JasperGold sequential equivalence checking</td></tr>
+            <tr><th scope="row">Verification</th><td>Formal equivalence with Yosys and JasperGold fallback</td></tr>
             <tr><th scope="row">Pass condition</th><td>Formal equivalence to the hidden reference design</td></tr>
           </tbody>
         </table>
@@ -244,7 +244,7 @@ function renderCase(record) {
             record,
             "sec",
             "sec.tcl",
-            { label: "Verifier", className: "pill-verifier" },
+            { label: "Commercial verifier", className: "pill-verifier" },
             "JasperGold sequential-equivalence setup for the case.",
           )}
         </div>
